@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Entrenamiento PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Incluir el adaptador de Chart.js para fechas -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* gray-900 */
+            color: #f1f5f9; /* slate-100 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .section-padding {
+            padding: 4rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .heading-primary {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -0.05em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .text-gradient {
+            background-image: linear-gradient(to right, #6EE7B7, #3B82F6, #9333EA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: #2d3748; /* gray-800 */
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .button {
+            border-radius: 9999px;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+        }
+        .collapsible-content.active {
+            max-height: 1000px; /* Suficientemente grande para cualquier contenido */
+        }
+        .collapsible-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .collapsible-arrow.rotate {
+            transform: rotate(180deg);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .aspect-w-16 {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        .aspect-h-9 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Estilos para el Modo Claro (Light Mode) --- */
+        body.light-mode {
+            background-color: #f8efb3; /* color5 */
+            color: #20a8d8; /* color1 */
+        }
+        body.light-mode .bg-gray-900 {
+            background-color: #f6dda6; /* color4 */
+        }
+        body.light-mode .bg-gray-800 {
+            background-color: #f6a4cb; /* color3 */
+        }
+        body.light-mode .text-slate-100 {
+            color: #20a8d8; /* color1 */
+        }
+        body.light-mode .text-gray-900 {
+            color: #20a8d8;
+        }
+        body.light-mode .text-white {
+            color: #20a8d8;
+        }
+        body.light-mode .card {
+            background-color: #f6dda6; /* color4 */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        body.light-mode .bg-gray-700 {
+            background-color: #f496e9; /* color2 */
+        }
+        body.light-mode .border-gray-700 {
+            border-color: #f496e9;
+        }
+        body.light-mode .text-gray-300,
+        body.light-mode .text-gray-400,
+        body.light-mode .text-gray-500 {
+            color: #20a8d8;
+        }
+        body.light-mode .placeholder-gray-500::placeholder {
+            color: #20a8d8;
+        }
+        body.light-mode .bg-blue-600 {
+            background-color: #20a8d8;
+        }
+        body.light-mode .hover\:bg-blue-700:hover {
+            background-color: #f496e9;
+        }
+        body.light-mode .bg-green-600 {
+            background-color: #f6a4cb;
+        }
+        body.light-mode .hover\:bg-green-700:hover {
+            background-color: #f6dda6;
+        }
+        body.light-mode .bg-red-600 {
+            background-color: #f496e9;
+        }
+        body.light-mode .hover\:bg-red-700:hover {
+            background-color: #f6a4cb;
+        }
+        body.light-mode .border-b-2 {
+            border-color: #20a8d8;
+        }
+        body.light-mode .ring-offset-gray-800 {
+            --tw-ring-offset-color: #f6a4cb;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-slate-100">
+
+    <header class="bg-gray-800 text-slate-100 py-6 px-4">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <h1 class="text-3xl font-black uppercase tracking-wider">KALYX Transforma y avanza</h1>
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="p-2 rounded-full text-slate-100 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white transition-colors duration-200" aria-label="Toggle theme">
+                <!-- Moon Icon (initial dark mode state) -->
+                <svg id="moon-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <!-- Sun Icon (hidden initially) -->
+                <svg id="sun-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="section-padding">
+        
+        <!-- Sección de Resumen Semanal -->
+        <section id="resumen-semanal" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-center">Resumen Semanal</h2>
+            <div class="grid md:grid-cols-3 gap-6 text-center">
+                <div class="card p-6">
+                    <p class="text-gray-400">Día de Hoy</p>
+                    <p id="dia-hoy" class="text-white text-2xl font-semibold mt-1">Lunes</p>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="goToRoutine('Lunes')">Ver Rutina</button>
+                </div>
+                <div class="card p-6">
+                    <p class="text-gray-400">Progreso Semanal</p>
+                    <p id="progreso-semanal-display" class="text-white text-2xl font-semibold mt-1">50%</p>
+                    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="location.href='#progreso'">Ver Detalle</button>
+                </div>
+                <div class="card p-6">
+                    <p class="text-gray-400">Total de Ejercicios</p>
+                    <p id="ejercicios-total-display" class="text-white text-2xl font-semibold mt-1">15</p>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="location.href='#rutinas'">Ver Todas</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Temporizador Global -->
+        <section id="temporizador" class="mb-12 flex flex-col items-center">
+            <div class="card p-8 text-center w-full md:w-2/3 lg:w-1/2">
+                <h3 class="text-lg font-bold text-gray-300">Temporizador de Descanso</h3>
+                <p id="timer-exercise-name" class="text-lg text-white font-semibold mb-2 hidden"></p>
+                <p id="global-timer-display" class="text-6xl font-black mt-2 mb-4">03:00</p>
+                <div id="timer-controls" class="flex justify-center space-x-4">
+                    <button id="timer-pause-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
+                        Pausar
+                    </button>
+                    <button id="timer-reset-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
+                        Reiniciar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Rutinas -->
+        <section id="rutinas" class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Detalle de Rutinas</h2>
+            </div>
+            <div id="rutinas-container">
+                <!-- Las rutinas se renderizarán aquí -->
+            </div>
+            
+            <!-- Modal del editor de rutinas -->
+            <div id="routine-editor-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+                <div class="card w-full max-w-2xl p-6">
+                    <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
+                        <h3 class="text-2xl font-bold">Editar Rutina: <span id="editor-routine-title"></span></h3>
+                        <button onclick="closeRoutineEditor()" class="text-gray-400 hover:text-white">&times;</button>
+                    </div>
+                    <div id="editable-exercise-list" class="space-y-4 mb-4 max-h-64 overflow-y-auto">
+                        <!-- La lista de ejercicios editables se renderizará aquí -->
+                    </div>
+                    <form id="exercise-form" class="mt-4 space-y-4">
+                        <h4 class="text-xl font-semibold">Añadir/Editar Ejercicio</h4>
+                        <div>
+                            <input type="hidden" id="exercise-index">
+                            <input type="text" id="exercise-name-input" placeholder="Nombre del ejercicio" class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <input type="number" id="exercise-sets-input" placeholder="Series" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <input type="number" id="exercise-reps-input" placeholder="Repeticiones" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <input type="text" id="exercise-video-url-input" placeholder="URL del video (YouTube)" class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button type="submit" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Ejercicio</button>
+                            <button type="button" onclick="clearExerciseForm()" class="button bg-gray-600 hover:bg-gray-700 text-white">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Carga Evolutiva -->
+        <section id="evolutionary-load" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-center">Carga Evolutiva</h2>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4">Selecciona un ejercicio para ver su progreso</h3>
+                <select id="exercise-chart-selector" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></select>
+                <div class="chart-container">
+                    <canvas id="evolutionary-load-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Progreso Semanal -->
+        <section id="progreso" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-center">Progreso Semanal</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Gráfico de progreso de peso/IMC -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Peso e IMC</h3>
+                    <div class="chart-container">
+                        <canvas id="weight-imc-chart"></canvas>
+                    </div>
+                </div>
+                <!-- Gráfico de progreso de medidas -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Medidas y % de Grasa Corporal</h3>
+                    <div class="chart-container">
+                        <canvas id="measurements-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario para actualizar medidas -->
+            <div class="card p-6 mt-6">
+                <h3 class="text-2xl font-bold mb-4">Actualizar Medidas</h3>
+                <form id="progress-form" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="gender" class="block text-gray-400">Género</label>
+                        <select id="gender" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="male">Hombre</option>
+                            <option value="female">Mujer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="height" class="block text-gray-400">Altura (cm)</label>
+                        <input type="number" id="height" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="weight" class="block text-gray-400">Peso (kg)</label>
+                        <input type="number" id="weight" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="neck" class="block text-gray-400">Cuello (cm)</label>
+                        <input type="number" id="neck" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="waist" class="block text-gray-400">Cintura (cm)</label>
+                        <input type="number" id="waist" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div id="hip-input-container">
+                        <label for="hip" class="block text-gray-400">Caderas (cm)</label>
+                        <input type="number" id="hip" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </form>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveWeeklyProgress()" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Progreso</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Comentarios (Diario de Entrenamiento) -->
+        <section id="diario" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-center">Diario de Entrenamiento</h2>
+            <div class="card p-6">
+                <h3 class="text-2xl font-semibold mb-4">Añadir Nuevo Comentario</h3>
+                <textarea id="comment-text" class="w-full p-4 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Escribe aquí tus observaciones, sensaciones o notas sobre tu entrenamiento..."></textarea>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="saveComments()" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Comentario</button>
+                </div>
+            </div>
+            <div class="card p-6 mt-6">
+                <h3 class="text-2xl font-semibold mb-4">Comentarios Guardados</h3>
+                <div id="comments-container" class="space-y-4">
+                    <!-- Los comentarios guardados se renderizarán aquí -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Encuesta -->
+        <section class="mt-12 text-center">
+            <a href="https://forms.gle/cjM6jbLhSvt95wDr6" target="_blank" class="inline-block button bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 text-lg transition-transform transform hover:scale-105">
+                ¡Danos tu opinión!
+            </a>
+            <p class="text-gray-400 text-sm mt-2">Haz clic para responder una breve encuesta y ayudarnos a mejorar.</p>
+        </section>
+    </main>
+
+    <!-- Modal para ver videos -->
+    <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="relative w-full max-w-3xl">
+            <button onclick="closeVideoModal()" class="absolute top-4 right-4 text-white text-3xl font-bold">&times;</button>
+            <div class="card p-4">
+                <h3 id="video-modal-title" class="text-xl font-bold mb-4"></h3>
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe id="video-iframe" class="w-full aspect-video rounded-lg" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar comentario -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="card w-full max-w-lg p-6">
+            <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
+                <h3 class="text-2xl font-bold">Editar Comentario</h3>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <textarea id="edit-comment-text" class="w-full p-4 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="4"></textarea>
+            <div class="mt-4 flex justify-end">
+                <button onclick="updateComment()" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for the routines
+        let routines = {
+            'Lunes': {
+                name: 'Lunes',
+                exercises: [
+                    { name: 'Sentadilla', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/SW_C5-B9K9A', weight_history: [{ date: '2023-10-26', weight: 80 }, { date: '2023-11-02', weight: 85 }] },
+                    { name: 'Press de Banca', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/rT7Dgcr-n24', weight_history: [{ date: '2023-10-26', weight: 60 }, { date: '2023-11-02', weight: 65 }] }
+                ]
+            },
+            'Martes': {
+                name: 'Martes',
+                exercises: [
+                    { name: 'Peso Muerto', sets: '4', reps: '6-8', video: 'https://www.youtube.com/embed/op9kVnSg61k', weight_history: [{ date: '2023-10-27', weight: 100 }] },
+                    { name: 'Dominadas', sets: '4', reps: 'al fallo', video: 'https://www.youtube.com/embed/eGo4Mv94J5M', weight_history: [] }
+                ]
+            },
+            'Miércoles': {
+                name: 'Miércoles',
+                exercises: [
+                    { name: 'Remo con Barra', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/Z0oD_4fA-5s', weight_history: [] },
+                    { name: 'Press Militar', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/SW_C5-B9K9A', weight_history: [] }
+                ]
+            },
+            'Jueves': {
+                name: 'Jueves',
+                exercises: [
+                    { name: 'Fondos en Paralelas', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/D3c2E1v01c0', weight_history: [] },
+                    { name: 'Curl de Bíceps', sets: '3', reps: '10-12', video: 'https://www.youtube.com/embed/in7C9z_2_2w', weight_history: [] }
+                ]
+            },
+            'Viernes': {
+                name: 'Viernes',
+                exercises: [
+                    { name: 'Sentadilla', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/SW_C5-B9K9A', weight_history: [] },
+                    { name: 'Peso Muerto', sets: '4', reps: '6-8', video: 'https://www.youtube.com/embed/op9kVnSg61k', weight_history: [] }
+                ]
+            },
+            'Sábado': {
+                name: 'Sábado',
+                exercises: [
+                    { name: 'Press de Banca', sets: '4', reps: '8-10', video: 'https://www.youtube.com/embed/rT7Dgcr-n24', weight_history: [] },
+                    { name: 'Dominadas', sets: '4', reps: 'al fallo', video: 'https://www.youtube.com/embed/eGo4Mv94J5M', weight_history: [] }
+                ]
+            },
+            'Domingo': {
+                name: 'Domingo',
+                exercises: []
+            }
+        };
+
+        // Data for weekly progress (weight, IMC, measurements)
+        let progressData = {
+            weight: {
+                labels: ['2023-10-26', '2023-11-02'],
+                datasets: [
+                    {
+                        label: 'Peso (kg)',
+                        data: [75, 74.5],
+                        borderColor: '#6EE7B7',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'IMC',
+                        data: [24.5, 24.3],
+                        borderColor: '#3B82F6',
+                        tension: 0.4
+                    }
+                ]
+            },
+            measurements: {
+                labels: ['2023-10-26', '2023-11-02'],
+                datasets: [
+                    {
+                        label: 'Cuello (cm)',
+                        data: [38, 37.8],
+                        borderColor: '#9333EA',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Cintura (cm)',
+                        data: [85, 84],
+                        borderColor: '#EF4444',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Cadera (cm)',
+                        data: [95, 94.5],
+                        borderColor: '#F59E0B',
+                        tension: 0.4
+                    }
+                ]
+            },
+            comments: [{ date: '2023-10-26', text: 'Gran semana de entrenamiento, me siento con más energía. Los pesos están subiendo.' }]
+        };
+
+        let currentEditingRoutine = null;
+        let chartInstances = {};
+        let evolutionaryLoadChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRoutinesFromLocalStorage();
+            loadProgressFromLocalStorage();
+            setTodayRoutine();
+            renderRoutines();
+            renderProgressGraphs();
+            renderComments();
+            populateExerciseSelector();
+            renderEvolutionaryLoadGraph();
+        });
+
+        // --- Local Storage Functions ---
+        function loadRoutinesFromLocalStorage() {
+            const storedRoutines = localStorage.getItem('routines');
+            if (storedRoutines) {
+                routines = JSON.parse(storedRoutines);
+            }
+        }
+
+        function saveRoutinesToLocalStorage() {
+            localStorage.setItem('routines', JSON.stringify(routines));
+            renderEvolutionaryLoadGraph();
+        }
+
+        function loadProgressFromLocalStorage() {
+            const storedProgress = localStorage.getItem('progressData');
+            if (storedProgress) {
+                progressData = JSON.parse(storedProgress);
+            }
+        }
+
+        function saveProgressToLocalStorage() {
+            localStorage.setItem('progressData', JSON.stringify(progressData));
+        }
+
+        // --- Helper Functions ---
+        function setTodayRoutine() {
+            const today = new Date();
+            const dayOfWeek = today.toLocaleDateString('es-ES', { weekday: 'long' });
+            document.getElementById('dia-hoy').textContent = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+        }
+        
+        function calculateBMI(weight, height) {
+            const heightInMeters = height / 100;
+            return (weight / (heightInMeters * heightInMeters)).toFixed(1);
+        }
+
+        function calculateBodyFat(gender, height, waist, neck, hip) {
+            let bodyFatPercentage;
+            const heightInInches = height / 2.54;
+            const waistInInches = waist / 2.54;
+            const neckInInches = neck / 2.54;
+            
+            if (gender === 'male') {
+                bodyFatPercentage = 495 / (1.0324 - 0.19077 * Math.log10(waistInInches - neckInInches) + 0.15456 * Math.log10(heightInInches)) - 450;
+            } else { // female
+                const hipInInches = hip / 2.54;
+                bodyFatPercentage = 495 / (1.29579 - 0.35004 * Math.log10(waistInInches + hipInInches - neckInInches) + 0.22100 * Math.log10(heightInInches)) - 450;
+            }
+            return bodyFatPercentage.toFixed(1);
+        }
+
+        // --- Routine Rendering Functions ---
+        function renderRoutines() {
+            const container = document.getElementById('rutinas-container');
+            container.innerHTML = '';
+            for (const day in routines) {
+                const routine = routines[day];
+                const totalExercises = routine.exercises.length;
+                const routineHTML = `
+                    <div class="card p-6 mb-4">
+                        <div class="flex justify-between items-center cursor-pointer collapsible-header" onclick="toggleCollapsible(this)">
+                            <h3 class="text-2xl font-bold">${routine.name}</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-400">${totalExercises} ejercicios</span>
+                                <svg class="w-5 h-5 text-gray-400 collapsible-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="collapsible-content mt-4">
+                            <div id="exercises-for-${day}" class="space-y-4">
+                                <!-- Los ejercicios para este día se renderizarán aquí -->
+                            </div>
+                            <div class="mt-4 text-right">
+                                <button onclick="openRoutineEditor('${day}')" class="button bg-blue-600 hover:bg-blue-700 text-white">Editar Rutina</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += routineHTML;
+                renderExercisesForDay(day);
+            }
+        }
+
+        function renderExercisesForDay(day) {
+            const container = document.getElementById(`exercises-for-${day}`);
+            container.innerHTML = '';
+            const routine = routines[day];
+            routine.exercises.forEach((exercise, index) => {
+                const exerciseHTML = `
+                    <div class="bg-gray-700 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-center">
+                        <div class="text-center sm:text-left">
+                            <h4 class="text-xl font-semibold">${exercise.name}</h4>
+                            <p class="text-gray-400">Series: ${exercise.sets} | Reps: ${exercise.reps}</p>
+                        </div>
+                        <div class="mt-2 sm:mt-0 flex space-x-2">
+                            <button onclick="openVideoModal('${exercise.name}', '${exercise.video}')" class="button bg-blue-600 hover:bg-blue-700 text-white">Video</button>
+                            <!-- Formulario para agregar peso -->
+                            <form onsubmit="addExerciseWeight(event, '${day}', ${index})" class="flex items-center space-x-2">
+                                <input type="number" name="weight" placeholder="Peso (kg)" class="w-24 p-2 bg-gray-900 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                <button type="submit" class="button bg-green-600 hover:bg-green-700 text-white">Añadir Peso</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += exerciseHTML;
+            });
+        }
+
+        // --- Collapsible Function ---
+        function toggleCollapsible(element) {
+            const content = element.nextElementSibling;
+            const arrow = element.querySelector('.collapsible-arrow');
+            content.classList.toggle('active');
+            arrow.classList.toggle('rotate');
+        }
+
+        // --- Routine Editor Modal Functions ---
+        function openRoutineEditor(day) {
+            currentEditingRoutine = day;
+            document.getElementById('editor-routine-title').textContent = day;
+            renderEditableExerciseList(day);
+            document.getElementById('routine-editor-modal').classList.remove('hidden');
+            document.getElementById('routine-editor-modal').classList.add('flex');
+        }
+
+        function closeRoutineEditor() {
+            currentEditingRoutine = null;
+            document.getElementById('routine-editor-modal').classList.add('hidden');
+            document.getElementById('routine-editor-modal').classList.remove('flex');
+            clearExerciseForm();
+            renderRoutines();
+        }
+
+        function renderEditableExerciseList(day) {
+            const container = document.getElementById('editable-exercise-list');
+            container.innerHTML = '';
+            const routine = routines[day];
+            routine.exercises.forEach((exercise, index) => {
+                const exerciseHTML = `
+                    <div class="bg-gray-700 p-4 rounded-lg flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xl font-semibold">${exercise.name}</h4>
+                            <p class="text-gray-400">Series: ${exercise.sets} | Reps: ${exercise.reps}</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="editExercise(${index})" class="button bg-blue-600 hover:bg-blue-700 text-white">Editar</button>
+                            <button onclick="deleteExercise(${index})" class="button bg-red-600 hover:bg-red-700 text-white">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += exerciseHTML;
+            });
+        }
+
+        function editExercise(index) {
+            const routine = routines[currentEditingRoutine];
+            const exercise = routine.exercises[index];
+            document.getElementById('exercise-index').value = index;
+            document.getElementById('exercise-name-input').value = exercise.name;
+            document.getElementById('exercise-sets-input').value = exercise.sets;
+            document.getElementById('exercise-reps-input').value = exercise.reps;
+            document.getElementById('exercise-video-url-input').value = exercise.video;
+        }
+
+        function deleteExercise(index) {
+            const routine = routines[currentEditingRoutine];
+            routine.exercises.splice(index, 1);
+            saveRoutinesToLocalStorage();
+            renderEditableExerciseList(currentEditingRoutine);
+        }
+
+        document.getElementById('exercise-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const index = document.getElementById('exercise-index').value;
+            const name = document.getElementById('exercise-name-input').value;
+            const sets = document.getElementById('exercise-sets-input').value;
+            const reps = document.getElementById('exercise-reps-input').value;
+            const video = document.getElementById('exercise-video-url-input').value;
+            
+            const newExercise = { name, sets, reps, video, weight_history: [] };
+
+            const routine = routines[currentEditingRoutine];
+            if (index === '') {
+                // Add new exercise
+                routine.exercises.push(newExercise);
+            } else {
+                // Edit existing exercise
+                const existingExercise = routine.exercises[index];
+                newExercise.weight_history = existingExercise.weight_history; // Preserve history
+                routine.exercises[index] = newExercise;
+            }
+            saveRoutinesToLocalStorage();
+            renderEditableExerciseList(currentEditingRoutine);
+            clearExerciseForm();
+        });
+
+        function clearExerciseForm() {
+            document.getElementById('exercise-index').value = '';
+            document.getElementById('exercise-name-input').value = '';
+            document.getElementById('exercise-sets-input').value = '';
+            document.getElementById('exercise-reps-input').value = '';
+            document.getElementById('exercise-video-url-input').value = '';
+        }
+
+        // --- Video Modal Functions ---
+        function openVideoModal(title, url) {
+            document.getElementById('video-modal-title').textContent = title;
+            document.getElementById('video-iframe').src = url;
+            document.getElementById('video-modal').classList.remove('hidden');
+            document.getElementById('video-modal').classList.add('flex');
+        }
+
+        function closeVideoModal() {
+            document.getElementById('video-iframe').src = '';
+            document.getElementById('video-modal').classList.add('hidden');
+            document.getElementById('video-modal').classList.remove('flex');
+        }
+
+        // --- Progress Graphs Functions ---
+        function renderProgressGraphs() {
+            renderWeightIMCChart();
+            renderMeasurementsChart();
+        }
+
+        function renderWeightIMCChart() {
+            if (chartInstances['weight-imc-chart']) {
+                chartInstances['weight-imc-chart'].destroy();
+            }
+            const ctx = document.getElementById('weight-imc-chart').getContext('2d');
+            chartInstances['weight-imc-chart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: progressData.weight.labels,
+                    datasets: progressData.weight.datasets.map(dataset => ({
+                        ...dataset,
+                        spanGaps: true,
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd-MM-yyyy',
+                                displayFormats: {
+                                    day: 'dd-MM-yy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Valor'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMeasurementsChart() {
+            if (chartInstances['measurements-chart']) {
+                chartInstances['measurements-chart'].destroy();
+            }
+            const ctx = document.getElementById('measurements-chart').getContext('2d');
+            chartInstances['measurements-chart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: progressData.measurements.labels,
+                    datasets: progressData.measurements.datasets.map(dataset => ({
+                        ...dataset,
+                        spanGaps: true,
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd-MM-yyyy',
+                                displayFormats: {
+                                    day: 'dd-MM-yy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Medidas (cm)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function saveWeeklyProgress() {
+            const date = new Date().toISOString().split('T')[0];
+            const gender = document.getElementById('gender').value;
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const neck = parseFloat(document.getElementById('neck').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const hip = (gender === 'female') ? parseFloat(document.getElementById('hip').value) : null;
+
+            if (isNaN(height) || isNaN(weight) || isNaN(neck) || isNaN(waist) || (gender === 'female' && isNaN(hip))) {
+                console.error("Please fill all required fields.");
+                return;
+            }
+
+            // Update Weight and IMC data
+            const bmi = calculateBMI(weight, height);
+            const weightLabels = progressData.weight.labels;
+            const weightData = progressData.weight.datasets[0].data;
+            const imcData = progressData.weight.datasets[1].data;
+
+            if (weightLabels.includes(date)) {
+                const index = weightLabels.indexOf(date);
+                weightData[index] = weight;
+                imcData[index] = bmi;
+            } else {
+                weightLabels.push(date);
+                weightData.push(weight);
+                imcData.push(bmi);
+            }
+
+            // Update Measurements data
+            const bodyFat = calculateBodyFat(gender, height, waist, neck, hip);
+            const measurementsLabels = progressData.measurements.labels;
+            const neckData = progressData.measurements.datasets[0].data;
+            const waistData = progressData.measurements.datasets[1].data;
+            const hipData = progressData.measurements.datasets[2].data;
+            
+            // Check if there's already data for today
+            if (measurementsLabels.includes(date)) {
+                const index = measurementsLabels.indexOf(date);
+                neckData[index] = neck;
+                waistData[index] = waist;
+                hipData[index] = hip;
+            } else {
+                measurementsLabels.push(date);
+                neckData.push(neck);
+                waistData.push(waist);
+                hipData.push(hip);
+            }
+            
+            // Re-render and save
+            saveProgressToLocalStorage();
+            renderProgressGraphs();
+            document.getElementById('progress-form').reset();
+        }
+
+        // --- Evolutionary Load Functions ---
+        function populateExerciseSelector() {
+            const selector = document.getElementById('exercise-chart-selector');
+            selector.innerHTML = '';
+            const allExercises = [];
+            for (const day in routines) {
+                routines[day].exercises.forEach(exercise => {
+                    // Check for duplicates
+                    if (!allExercises.some(e => e.name === exercise.name)) {
+                        allExercises.push(exercise);
+                    }
+                });
+            }
+            allExercises.forEach(exercise => {
+                const option = document.createElement('option');
+                option.value = exercise.name;
+                option.textContent = exercise.name;
+                selector.appendChild(option);
+            });
+            selector.addEventListener('change', renderEvolutionaryLoadGraph);
+        }
+
+        function renderEvolutionaryLoadGraph() {
+            const selectedExerciseName = document.getElementById('exercise-chart-selector').value;
+
+            if (evolutionaryLoadChartInstance) {
+                evolutionaryLoadChartInstance.destroy();
+            }
+
+            if (!selectedExerciseName) {
+                return;
+            }
+
+            const allExerciseData = [];
+            for (const day in routines) {
+                routines[day].exercises.forEach(exercise => {
+                    if (exercise.name === selectedExerciseName) {
+                        allExerciseData.push(...exercise.weight_history);
+                    }
+                });
+            }
+
+            // Sort data by date to ensure correct plotting
+            allExerciseData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const labels = allExerciseData.map(data => data.date);
+            const weights = allExerciseData.map(data => data.weight);
+
+            const ctx = document.getElementById('evolutionary-load-chart').getContext('2d');
+            evolutionaryLoadChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: `Carga de ${selectedExerciseName} (kg)`,
+                            data: weights,
+                            borderColor: '#3B82F6',
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd-MM-yyyy',
+                                displayFormats: {
+                                    day: 'dd-MM-yy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Peso (kg)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function addExerciseWeight(event, day, index) {
+            event.preventDefault();
+            const form = event.target;
+            const weight = parseFloat(form.querySelector('input[name="weight"]').value);
+            const date = new Date().toISOString().split('T')[0];
+
+            if (isNaN(weight)) {
+                console.error("Invalid weight value.");
+                return;
+            }
+            
+            const routine = routines[day];
+            const exercise = routine.exercises[index];
+
+            // Check if a record for the current date already exists and update it
+            const existingEntryIndex = exercise.weight_history.findIndex(entry => entry.date === date);
+            if (existingEntryIndex > -1) {
+                exercise.weight_history[existingEntryIndex].weight = weight;
+            } else {
+                exercise.weight_history.push({ date, weight });
+            }
+            
+            saveRoutinesToLocalStorage();
+            renderEvolutionaryLoadGraph();
+            form.reset();
+        }
+
+
+        // --- Comment Functions ---
+        function renderComments() {
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+            progressData.comments.sort((a, b) => new Date(b.date) - new Date(a.date));
+            progressData.comments.forEach((comment, index) => {
+                const commentHTML = `
+                    <div class="card p-4 flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-400 text-sm mb-1">${comment.date}</p>
+                            <p id="comment-text-${index}" class="text-white">${comment.text}</p>
+                        </div>
+                        <div class="space-x-2 flex-shrink-0">
+                            <button onclick="openEditModal(${index})" class="button bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 text-sm">Editar</button>
+                            <button onclick="deleteComment(${index})" class="button bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-sm">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += commentHTML;
+            });
+        }
+
+        function saveComments() {
+            const commentText = document.getElementById('comment-text').value;
+            if (commentText.trim() === '') return;
+
+            const date = new Date().toISOString().split('T')[0];
+            progressData.comments.push({ date, text: commentText });
+            saveProgressToLocalStorage();
+            renderComments();
+            document.getElementById('comment-text').value = '';
+        }
+
+        let editingCommentIndex = null;
+        function openEditModal(index) {
+            editingCommentIndex = index;
+            document.getElementById('edit-comment-text').value = progressData.comments[index].text;
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-modal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            editingCommentIndex = null;
+            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('flex');
+        }
+
+        function updateComment() {
+            if (editingCommentIndex !== null) {
+                const newText = document.getElementById('edit-comment-text').value;
+                if (newText.trim() !== '') {
+                    progressData.comments[editingCommentIndex].text = newText;
+                    saveProgressToLocalStorage();
+                    renderComments();
+                    closeEditModal();
+                }
+            }
+        }
+
+        function deleteComment(index) {
+            progressData.comments.splice(index, 1);
+            saveProgressToLocalStorage();
+            renderComments();
+        }
+        
+        // Dark/Light Mode toggle
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isDarkMode = !document.body.classList.contains('light-mode');
+            document.getElementById('moon-icon').classList.toggle('hidden', !isDarkMode);
+            document.getElementById('sun-icon').classList.toggle('hidden', isDarkMode);
+        });
+
+    </script>
+</body>
+</html>
