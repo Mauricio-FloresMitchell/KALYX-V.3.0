@@ -186,6 +186,9 @@
                 <p id="timer-exercise-name" class="text-lg text-white font-semibold mb-2 hidden"></p>
                 <p id="global-timer-display" class="text-6xl font-black mt-2 mb-4">03:00</p>
                 <div id="timer-controls" class="flex justify-center space-x-4">
+                    <button id="timer-start-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
+                        Iniciar
+                    </button>
                     <button id="timer-pause-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
                         Pausar
                     </button>
@@ -261,6 +264,7 @@
                 <h3 class="text-xl font-semibold mb-4">Selecciona un ejercicio para ver su progreso</h3>
                 <select id="exercise-chart-selector" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></select>
                 <div class="chart-container">
+                    <div id="evolutionary-load-message" class="text-center text-gray-400 p-4" style="display: none;">No hay datos de carga para mostrar. Registra cargas en tus ejercicios para ver el progreso.</div>
                     <canvas id="evolutionary-load-chart"></canvas>
                 </div>
             </div>
@@ -360,6 +364,15 @@
         </div>
     </footer>
 
+    <div id="custom-alert-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-[9999]">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-sm w-full text-center">
+            <p id="custom-alert-message" class="text-lg mb-4"></p>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="closeCustomAlert()">
+                Aceptar
+            </button>
+        </div>
+    </div>
+    
     <script>
         // Data structure
         const DAYS_OF_WEEK = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -393,6 +406,23 @@
             const storedData = localStorage.getItem('kalyxAppData');
             if (storedData) {
                 appData = JSON.parse(storedData);
+            } else {
+                // Initialize with empty data if nothing is stored
+                appData = {
+                    routines: {
+                        "Lunes": { exercises: [] },
+                        "Martes": { exercises: [] },
+                        "Miércoles": { exercises: [] },
+                        "Jueves": { exercises: [] },
+                        "Viernes": { exercises: [] },
+                        "Sábado": { exercises: [] },
+                        "Domingo": { exercises: [] }
+                    },
+                    progress: [],
+                    comments: [],
+                    evolutionaryLoad: {}
+                };
+                saveAppData(); // Save the initial empty structure
             }
         }
 
@@ -404,8 +434,9 @@
         // Updates weekly summary
         function updateSummary() {
             const today = new Date();
-            const dayOfWeek = DAYS_OF_WEEK[today.getDay() - 1];
-            document.getElementById('dia-hoy').innerText = dayOfWeek || 'Día de descanso';
+            const dayOfWeekIndex = today.getDay(); // 0 for Sunday, 1 for Monday, etc.
+            const displayDay = DAYS_OF_WEEK[dayOfWeekIndex === 0 ? 6 : dayOfWeekIndex - 1]; // Adjust for 0-indexed array starting Monday
+            document.getElementById('dia-hoy').innerText = displayDay || 'Día de descanso';
             
             let totalExercises = 0;
             let completedRoutines = 0;
@@ -413,11 +444,11 @@
             for (const day in appData.routines) {
                 if (appData.routines[day].exercises.length > 0) {
                     totalExercises += appData.routines[day].exercises.length;
-                    completedRoutines++;
+                    completedRoutines++; // A routine is considered "completed" if it has exercises for simplicity
                 }
             }
 
-            const progressPercentage = completedRoutines > 0 ? (completedRoutines / DAYS_OF_WEEK.length * 100).toFixed(0) : 0;
+            const progressPercentage = DAYS_OF_WEEK.length > 0 ? (completedRoutines / DAYS_OF_WEEK.length * 100).toFixed(0) : 0;
             document.getElementById('progreso-semanal-display').innerText = `${progressPercentage}%`;
             document.getElementById('ejercicios-total-display').innerText = totalExercises;
         }
@@ -438,6 +469,9 @@
                             <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="openRoutineEditor('${day}')">
                                 Editar
                             </button>
+                            <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteRoutine('${day}')">
+                                Eliminar
+                            </button>
                             <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-full text-sm collapsible-toggle" data-target="routine-${day}-content">
                                 <span class="collapsible-arrow inline-block">▼</span>
                             </button>
@@ -457,8 +491,8 @@
                                         <button class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="openLoadModal('${day}', '${exercise.name}')">
                                             Registrar Carga
                                         </button>
-                                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="startTimerForExercise('${exercise.name}')">
-                                            Temporizador
+                                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteExerciseFromRoutine('${day}', ${index})">
+                                            Eliminar
                                         </button>
                                     </div>
                                 </div>
@@ -469,38 +503,59 @@
                 container.appendChild(routineElement);
             });
             setupCollapsibles();
-            updateExerciseChartSelector();
         }
 
-        // Renders the editable exercise list in the modal
-        function renderEditableExerciseList() {
-            const list = document.getElementById('editable-exercise-list');
-            list.innerHTML = '';
-            const exercises = appData.routines[currentEditingDay].exercises;
-            if (exercises.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 text-center">No hay ejercicios para este día.</p>';
-                return;
-            }
-            exercises.forEach((exercise, index) => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-2 bg-gray-700 rounded-md';
-                item.innerHTML = `
-                    <p class="text-white">${exercise.name}</p>
-                    <div class="flex space-x-2">
-                        <button type="button" class="text-blue-400 hover:text-blue-300" onclick="editExercise(${index})">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                        <button type="button" class="text-red-400 hover:text-red-300" onclick="deleteExercise(${index})">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
-                    </div>
-                `;
-                list.appendChild(item);
+        // Deletes an entire routine
+        function deleteRoutine(day) {
+            showConfirmation(`¿Estás seguro de que quieres eliminar la rutina del ${day}?`, () => {
+                appData.routines[day].exercises = [];
+                saveAppData();
+                renderRoutines();
+                updateSummary();
+            });
+        }
+        
+        // Deletes a single exercise from a routine
+        function deleteExerciseFromRoutine(day, index) {
+            showConfirmation(`¿Estás seguro de que quieres eliminar este ejercicio?`, () => {
+                appData.routines[day].exercises.splice(index, 1);
+                saveAppData();
+                renderRoutines();
+                updateSummary();
+                if (currentEditingDay === day) {
+                    renderEditableExerciseList();
+                }
             });
         }
 
-        // --- Modals and Forms ---
+        // Renders the list of editable exercises in the modal
+        function renderEditableExerciseList() {
+            const container = document.getElementById('editable-exercise-list');
+            container.innerHTML = '';
+            const routine = appData.routines[currentEditingDay];
+            if (!routine || routine.exercises.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center">No hay ejercicios en esta rutina.</p>';
+                return;
+            }
+            routine.exercises.forEach((exercise, index) => {
+                const exerciseElement = document.createElement('div');
+                exerciseElement.className = 'p-4 bg-gray-700 rounded-lg flex justify-between items-center';
+                exerciseElement.innerHTML = `
+                    <p class="text-lg font-semibold">${exercise.name}</p>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="editExercise(${index})">
+                            Editar
+                        </button>
+                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteExerciseFromRoutine('${currentEditingDay}', ${index})">
+                            Eliminar
+                        </button>
+                    </div>
+                `;
+                container.appendChild(exerciseElement);
+            });
+        }
 
+        // Opens the routine editor modal
         function openRoutineEditor(day) {
             currentEditingDay = day;
             document.getElementById('editor-routine-title').innerText = day;
@@ -509,161 +564,117 @@
             document.getElementById('routine-editor-modal').classList.add('flex');
         }
 
+        // Closes the routine editor modal
         function closeRoutineEditor() {
             document.getElementById('routine-editor-modal').classList.add('hidden');
             document.getElementById('routine-editor-modal').classList.remove('flex');
             clearExerciseForm();
         }
-
-        function openLoadModal(day, exerciseName) {
-            document.getElementById('load-day-input').value = day;
-            document.getElementById('load-exercise-name-input').value = exerciseName;
-            document.getElementById('load-modal').classList.remove('hidden');
-            document.getElementById('load-modal').classList.add('flex');
-        }
-
-        function closeLoadModal() {
-            document.getElementById('load-modal').classList.add('hidden');
-            document.getElementById('load-modal').classList.remove('flex');
-            document.getElementById('load-form').reset();
-        }
         
-        // Form to add/edit an exercise
-        document.getElementById('exercise-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const exerciseName = document.getElementById('exercise-name-input').value;
-            const sets = document.getElementById('exercise-sets-input').value;
-            const reps = document.getElementById('exercise-reps-input').value;
-            const videoUrl = document.getElementById('exercise-video-url-input').value;
-            const exerciseIndex = document.getElementById('exercise-index').value;
-
-            if (exerciseName.trim() === '') {
-                showCustomAlert('El nombre del ejercicio no puede estar vacío.');
-                return;
-            }
-
-            if (exerciseIndex === '') {
-                const newExercise = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
-                appData.routines[currentEditingDay].exercises.push(newExercise);
-            } else {
-                appData.routines[currentEditingDay].exercises[exerciseIndex] = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
-            }
-
-            saveAppData();
-            renderEditableExerciseList();
-            renderRoutines();
-            updateSummary();
-            clearExerciseForm();
-        });
-
-        // Form to register load
-        document.getElementById('load-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const day = document.getElementById('load-day-input').value;
-            const exerciseName = document.getElementById('load-exercise-name-input').value;
-            const weight = parseFloat(document.getElementById('load-weight-input').value);
-
-            if (isNaN(weight) || weight <= 0) {
-                showCustomAlert('Por favor, introduce un peso válido.');
-                return;
-            }
-
-            const loadData = {
-                date: new Date().toISOString(),
-                weight: weight
-            };
-
-            if (!appData.evolutionaryLoad[exerciseName]) {
-                appData.evolutionaryLoad[exerciseName] = [];
-            }
-            appData.evolutionaryLoad[exerciseName].push(loadData);
-            
-            saveAppData();
-            updateExerciseChartSelector();
-            renderEvolutionaryLoadChart(exerciseName);
-            closeLoadModal();
-        });
-
+        // Fills the form to edit an exercise
         function editExercise(index) {
             const exercise = appData.routines[currentEditingDay].exercises[index];
+            document.getElementById('exercise-index').value = index;
             document.getElementById('exercise-name-input').value = exercise.name;
             document.getElementById('exercise-sets-input').value = exercise.sets;
             document.getElementById('exercise-reps-input').value = exercise.reps;
             document.getElementById('exercise-video-url-input').value = exercise.videoUrl;
-            document.getElementById('exercise-index').value = index;
         }
 
-        function deleteExercise(index) {
-            showConfirmation('¿Estás seguro de que quieres eliminar este ejercicio?', () => {
-                appData.routines[currentEditingDay].exercises.splice(index, 1);
-                saveAppData();
-                renderEditableExerciseList();
-                renderRoutines();
-                updateSummary();
-                clearExerciseForm();
-            });
-        }
-
+        // Clears the exercise form in the modal
         function clearExerciseForm() {
             document.getElementById('exercise-form').reset();
             document.getElementById('exercise-index').value = '';
         }
 
-        // --- Charts ---
-        function updateExerciseChartSelector() {
-            const selector = document.getElementById('exercise-chart-selector');
-            selector.innerHTML = '';
+        // --- Timer Functions ---
+
+        function startTimer() {
+            if (isTimerRunning) return;
+            isTimerRunning = true;
+            document.getElementById('timer-start-btn').disabled = true;
+            document.getElementById('timer-pause-btn').disabled = false;
+            document.getElementById('timer-reset-btn').disabled = false;
             
-            const allExercises = new Set();
-            for (const day in appData.routines) {
-                appData.routines[day].exercises.forEach(ex => allExercises.add(ex.name));
-            }
-            
-            if (allExercises.size === 0) {
-                selector.innerHTML = '<option value="">No hay ejercicios registrados</option>';
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                if (timerSeconds < 0) {
+                    resetTimer();
+                    showCustomAlert('¡Tiempo de descanso terminado!');
+                    return;
+                }
+                updateTimerDisplay();
+                
+                if (timerSeconds === 5) {
+                    showCustomAlert('¡Quedan 5 segundos de descanso!');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('timer-start-btn').disabled = false;
+            document.getElementById('timer-pause-btn').disabled = true;
+        }
+
+        function resetTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timerSeconds = 180; // Reinicia a 3 minutos
+            updateTimerDisplay();
+            document.getElementById('timer-start-btn').disabled = false;
+            document.getElementById('timer-pause-btn').disabled = true;
+            document.getElementById('timer-reset-btn').disabled = true;
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('global-timer-display').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        
+        // --- Chart & Progress Functions ---
+
+        // Renders the evolutionary load chart for a specific exercise
+        function renderEvolutionaryLoadChart(exerciseName) {
+            const container = document.getElementById('evolutionary-load-chart');
+            const messageContainer = document.getElementById('evolutionary-load-message');
+            const data = appData.evolutionaryLoad[exerciseName] || [];
+
+            if (data.length === 0) {
                 if (evolutionaryLoadChart) {
                     evolutionaryLoadChart.destroy();
-                    evolutionaryLoadChart = null;
+                    evolutionaryLoadChart = null; // Clear the chart instance
                 }
+                container.style.display = 'none';
+                messageContainer.style.display = 'block';
                 return;
             }
 
-            const sortedExercises = Array.from(allExercises).sort();
-
-            sortedExercises.forEach(exerciseName => {
-                const option = document.createElement('option');
-                option.value = exerciseName;
-                option.innerText = exerciseName;
-                selector.appendChild(option);
-            });
-
-            if (sortedExercises.length > 0) {
-                renderEvolutionaryLoadChart(sortedExercises[0]);
-            }
-        }
-
-        function renderEvolutionaryLoadChart(exerciseName) {
-            const ctx = document.getElementById('evolutionary-load-chart').getContext('2d');
-            const data = appData.evolutionaryLoad[exerciseName] || [];
+            // Hide message and show chart
+            container.style.display = 'block';
+            messageContainer.style.display = 'none';
 
             if (evolutionaryLoadChart) {
                 evolutionaryLoadChart.destroy();
             }
 
-            const chartData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
-
+            // Now, get the context again because the old one might be invalid after destroy
+            const ctx = container.getContext('2d');
+            
             evolutionaryLoadChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: chartData.map(item => item.date),
+                    labels: data.map(d => d.date),
                     datasets: [{
-                        label: `Carga (${exerciseName})`,
-                        data: chartData.map(item => item.weight),
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        label: 'Carga (kg)',
+                        data: data.map(d => d.weight),
+                        borderColor: 'rgb(102, 255, 102)',
+                        backgroundColor: 'rgba(102, 255, 102, 0.2)',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.1
                     }]
                 },
                 options: {
@@ -672,31 +683,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            time: {
-                                unit: 'day'
-                            },
-                            title: {
-                                display: true,
-                                text: 'Fecha'
-                            }
+                            time: { unit: 'day' },
+                            title: { display: true, text: 'Fecha' }
                         },
                         y: {
                             beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Peso (kg)'
-                            }
+                            title: { display: true, text: 'Peso (kg)' }
                         }
                     },
                     plugins: {
                         tooltip: {
                             callbacks: {
                                 title: function(context) {
-                                    return new Date(context[0].label).toLocaleDateString('es-ES', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    });
+                                    return new Date(context[0].label).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                                 },
                                 label: function(context) {
                                     let label = context.dataset.label || '';
@@ -715,21 +714,46 @@
             });
         }
         
-        document.getElementById('exercise-chart-selector').addEventListener('change', (e) => {
-            const selectedExercise = e.target.value;
-            renderEvolutionaryLoadChart(selectedExercise);
-        });
-
-        // Corregida la función para renderizar los gráficos de progreso
+        // Updates the selector for evolutionary load chart
+        function updateExerciseChartSelector() {
+            const selector = document.getElementById('exercise-chart-selector');
+            const messageContainer = document.getElementById('evolutionary-load-message');
+            const chartContainer = document.getElementById('evolutionary-load-chart');
+            selector.innerHTML = '';
+            const exercises = new Set();
+            for (const exerciseName in appData.evolutionaryLoad) {
+                if (appData.evolutionaryLoad[exerciseName].length > 0) {
+                    exercises.add(exerciseName);
+                }
+            }
+            
+            if (exercises.size > 0) {
+                exercises.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    selector.appendChild(option);
+                });
+                chartContainer.style.display = 'block';
+                messageContainer.style.display = 'none';
+                renderEvolutionaryLoadChart(selector.value);
+            } else {
+                selector.innerHTML = '<option value="">No hay ejercicios registrados</option>';
+                chartContainer.style.display = 'none';
+                messageContainer.style.display = 'block';
+            }
+        }
+        
+        // Renders progress graphs (weight/IMC and measurements)
         function renderProgressGraphs() {
             const progressData = appData.progress.sort((a, b) => new Date(a.date) - new Date(b.date));
             const dates = progressData.map(p => p.date);
             
-            // Destruir gráficos existentes para evitar superposiciones
+            // Destroy existing charts to avoid overlaps
             if (weightImcChart) weightImcChart.destroy();
             if (measurementsChart) measurementsChart.destroy();
-
-            // Gráfico de Peso e IMC
+            
+            // Chart for Weight and IMC
             const ctx1 = document.getElementById('weight-imc-chart').getContext('2d');
             weightImcChart = new Chart(ctx1, {
                 type: 'line',
@@ -749,8 +773,8 @@
                                 const heightM = p.height / 100;
                                 return p.weight / (heightM * heightM);
                             }),
-                            borderColor: 'rgb(102, 255, 153)',
-                            backgroundColor: 'rgba(102, 255, 153, 0.2)',
+                            borderColor: 'rgb(102, 255, 102)',
+                            backgroundColor: 'rgba(102, 255, 102, 0.2)',
                             yAxisID: 'y1',
                         }
                     ]
@@ -781,7 +805,7 @@
                 }
             });
 
-            // Gráfico de Medidas y % Grasa Corporal
+            // Chart for Measurements and Body Fat Percentage
             const ctx2 = document.getElementById('measurements-chart').getContext('2d');
             measurementsChart = new Chart(ctx2, {
                 type: 'line',
@@ -796,15 +820,15 @@
                             yAxisID: 'y',
                         },
                         {
-                            label: 'Cintura (cm)',
-                            data: progressData.map(p => p.waist),
-                            borderColor: 'rgb(255, 205, 86)',
-                            backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                            label: 'Cuello (cm)',
+                            data: progressData.map(p => p.neck),
+                            borderColor: 'rgb(255, 159, 64)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
                             yAxisID: 'y1',
                         },
                         {
-                            label: 'Cuello (cm)',
-                            data: progressData.map(p => p.neck),
+                            label: 'Cintura (cm)',
+                            data: progressData.map(p => p.waist),
                             borderColor: 'rgb(75, 192, 192)',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             yAxisID: 'y1',
@@ -855,24 +879,14 @@
                 commentElement.innerHTML = `
                     <p class="text-white">${comment}</p>
                     <button class="text-red-400 hover:text-red-300" onclick="deleteComment(${index})">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3m-2 4h12"/></svg>
                     </button>
                 `;
                 container.appendChild(commentElement);
             });
         }
-
-        document.getElementById('comment-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newComment = document.getElementById('new-comment-text').value.trim();
-            if (newComment) {
-                appData.comments.push(newComment);
-                saveAppData();
-                renderComments();
-                document.getElementById('new-comment-text').value = '';
-            }
-        });
-
+        
+        // Deletes a comment
         function deleteComment(index) {
             showConfirmation('¿Estás seguro de que quieres eliminar esta nota?', () => {
                 appData.comments.splice(index, 1);
@@ -880,70 +894,18 @@
                 renderComments();
             });
         }
-
-        // --- Other functions ---
-        function goToRoutine(day) {
-            const routineElement = document.getElementById(`routine-${day}-content`);
-            if (routineElement) {
-                routineElement.classList.add('active');
-                const toggleButton = routineElement.previousElementSibling.querySelector('.collapsible-arrow');
-                if (toggleButton) {
-                    toggleButton.classList.add('rotate');
-                }
-                routineElement.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        function setupCollapsibles() {
-            const collapsibleButtons = document.querySelectorAll('.collapsible-toggle');
-            collapsibleButtons.forEach(button => {
-                button.removeEventListener('click', handleCollapsibleClick);
-                button.addEventListener('click', handleCollapsibleClick);
-            });
-        }
-
-        function handleCollapsibleClick(event) {
-            const button = event.currentTarget;
-            const targetId = button.getAttribute('data-target');
-            const targetContent = document.getElementById(targetId);
-            const arrow = button.querySelector('.collapsible-arrow');
-            
-            if (targetContent.classList.contains('active')) {
-                targetContent.classList.remove('active');
-                arrow.classList.remove('rotate');
-            } else {
-                targetContent.classList.add('active');
-                arrow.classList.add('rotate');
-            }
-        }
         
-        function startTimerForExercise(exerciseName) {
-            document.getElementById('timer-exercise-name').innerText = exerciseName;
-            document.getElementById('timer-exercise-name').classList.remove('hidden');
-            showCustomAlert(`Temporizador iniciado para el ejercicio: ${exerciseName}`);
-        }
-
-        // Dark/Light Mode toggle
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isDarkMode = !document.body.classList.contains('light-mode');
-            document.getElementById('moon-icon').classList.toggle('hidden', !isDarkMode);
-            document.getElementById('sun-icon').classList.toggle('hidden', isDarkMode);
-        });
-
+        // --- UI & Event Handlers ---
+        
         // Custom alert modal
         function showCustomAlert(message) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[9999]';
-            modal.innerHTML = `
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-sm w-full text-center">
-                    <p class="text-lg mb-4">${message}</p>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentNode.parentNode.remove()">
-                        Aceptar
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
+            const modal = document.getElementById('custom-alert-modal');
+            document.getElementById('custom-alert-message').innerText = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-modal').style.display = 'none';
         }
 
         // Custom confirmation modal
@@ -954,64 +916,205 @@
                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-sm w-full text-center">
                     <p class="text-lg mb-4">${message}</p>
                     <div class="flex justify-center space-x-4">
-                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full" onclick="this.parentNode.parentNode.remove();">
+                        <button id="cancel-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
                             Cancelar
                         </button>
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="onConfirmCallback(); this.parentNode.parentNode.remove();">
-                            Aceptar
+                        <button id="confirm-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+                            Confirmar
                         </button>
                     </div>
                 </div>
             `;
-            // Attach the callback function to a global-ish scope for the modal button
-            window.onConfirmCallback = onConfirm;
             document.body.appendChild(modal);
+
+            const confirmButton = modal.querySelector('#confirm-btn');
+            const cancelButton = modal.querySelector('#cancel-btn');
+
+            confirmButton.addEventListener('click', () => {
+                onConfirm();
+                modal.remove();
+            });
+
+            cancelButton.addEventListener('click', () => {
+                modal.remove();
+            });
         }
 
+        // Handles collapsible sections
+        function setupCollapsibles() {
+            const toggles = document.querySelectorAll('.collapsible-toggle');
+            toggles.forEach(toggle => {
+                toggle.onclick = function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetContent = document.getElementById(targetId);
+                    const arrow = this.querySelector('.collapsible-arrow');
+                    
+                    if (targetContent.classList.contains('active')) {
+                        targetContent.classList.remove('active');
+                        arrow.classList.remove('rotate');
+                    } else {
+                        targetContent.classList.add('active');
+                        arrow.classList.add('rotate');
+                    }
+                };
+            });
+        }
+
+        // Opens the load modal
+        function openLoadModal(day, exerciseName) {
+            document.getElementById('load-day-input').value = day;
+            document.getElementById('load-exercise-name-input').value = exerciseName;
+            document.getElementById('load-modal').classList.remove('hidden');
+            document.getElementById('load-modal').classList.add('flex');
+        }
+
+        // Closes the load modal
+        function closeLoadModal() {
+            document.getElementById('load-modal').classList.add('hidden');
+            document.getElementById('load-modal').classList.remove('flex');
+            document.getElementById('load-form').reset();
+        }
+
+        // Redirects to a specific routine section and opens it
+        function goToRoutine(day) {
+            const routineElement = document.querySelector(`#routine-${day}-content`);
+            if (routineElement) {
+                routineElement.classList.add('active');
+                const toggle = routineElement.previousElementSibling.querySelector('.collapsible-arrow');
+                if (toggle) toggle.classList.add('rotate');
+                document.getElementById('rutinas').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Toggles light/dark mode
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            const isLightMode = body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+            document.getElementById('moon-icon').classList.toggle('hidden', isLightMode);
+            document.getElementById('sun-icon').classList.toggle('hidden', !isLightMode);
+            
+            // Re-render charts to update colors
+            if (evolutionaryLoadChart) renderEvolutionaryLoadChart(document.getElementById('exercise-chart-selector').value);
+            if (weightImcChart || measurementsChart) renderProgressGraphs();
+        }
+
+        // Initial setup for theme
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('moon-icon').classList.add('hidden');
+                document.getElementById('sun-icon').classList.remove('hidden');
+            } else {
+                document.getElementById('moon-icon').classList.remove('hidden');
+                document.getElementById('sun-icon').classList.add('hidden');
+            }
+        }
+
+        // --- Event Listeners ---
+        
+        // Timer controls
+        document.getElementById('timer-start-btn').addEventListener('click', startTimer);
+        document.getElementById('timer-pause-btn').addEventListener('click', pauseTimer);
+        document.getElementById('timer-reset-btn').addEventListener('click', resetTimer);
+
+        // Form to add/edit an exercise
+        document.getElementById('exercise-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const exerciseName = document.getElementById('exercise-name-input').value;
+            const sets = document.getElementById('exercise-sets-input').value;
+            const reps = document.getElementById('exercise-reps-input').value;
+            const videoUrl = document.getElementById('exercise-video-url-input').value;
+            const exerciseIndex = document.getElementById('exercise-index').value;
+
+            if (exerciseName.trim() === '') {
+                showCustomAlert('El nombre del ejercicio no puede estar vacío.');
+                return;
+            }
+
+            if (exerciseIndex === '') {
+                const newExercise = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
+                appData.routines[currentEditingDay].exercises.push(newExercise);
+            } else {
+                appData.routines[currentEditingDay].exercises[exerciseIndex] = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
+            }
+
+            saveAppData();
+            renderEditableExerciseList();
+            renderRoutines();
+            updateSummary();
+            clearExerciseForm();
+        });
+
+        // Form to register load
+        document.getElementById('load-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const day = document.getElementById('load-day-input').value;
+            const exerciseName = document.getElementById('load-exercise-name-input').value;
+            const weight = parseFloat(document.getElementById('load-weight-input').value);
+
+            if (isNaN(weight) || weight <= 0) {
+                showCustomAlert('Por favor, introduce un peso válido.');
+                return;
+            }
+
+            const loadData = { date: new Date().toISOString(), weight: weight };
+            if (!appData.evolutionaryLoad[exerciseName]) {
+                appData.evolutionaryLoad[exerciseName] = [];
+            }
+            appData.evolutionaryLoad[exerciseName].push(loadData);
+            saveAppData();
+            updateExerciseChartSelector();
+            renderEvolutionaryLoadChart(exerciseName);
+            closeLoadModal();
+        });
+        
+        document.getElementById('exercise-chart-selector').addEventListener('change', (e) => {
+            const selectedExercise = e.target.value;
+            renderEvolutionaryLoadChart(selectedExercise);
+        });
+
+        // Form to save progress
         document.getElementById('progress-form').addEventListener('submit', (e) => {
             e.preventDefault();
-
             const age = parseFloat(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
             const heightCm = parseFloat(document.getElementById('height').value);
             const weightKg = parseFloat(document.getElementById('weight').value);
-            const neck = parseFloat(document.getElementById('neck').value) || 0;
-            const waist = parseFloat(document.getElementById('waist').value) || 0;
-            const hip = parseFloat(document.getElementById('hip').value) || 0;
+            const bodyFat = parseFloat(document.getElementById('body-fat').value);
+            const neck = parseFloat(document.getElementById('neck').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const hip = parseFloat(document.getElementById('hip').value);
             const comment = document.getElementById('comment-progress').value;
 
-            if (isNaN(heightCm) || isNaN(weightKg) || heightCm <= 0 || weightKg <= 0 || isNaN(age) || age <= 0) {
-                showCustomAlert('Por favor, introduce una edad, altura y peso válidos.');
+            if (isNaN(weightKg) || weightKg <= 0 || isNaN(heightCm) || heightCm <= 0 || isNaN(age) || age <= 0) {
+                showCustomAlert('Por favor, rellena los campos de Edad, Altura y Peso correctamente.');
                 return;
             }
-            
-            const genderValue = (gender === 'male') ? 1 : 0;
-            const heightM = heightCm / 100;
-            const imc = weightKg / (heightM * heightM);
 
-            const bodyFatPercentage = (1.20 * imc) + (0.23 * age) - (10.8 * genderValue) - 5.4;
-
-            const progressEntry = {
+            const newProgress = {
                 date: new Date().toISOString(),
-                gender: gender,
                 age: age,
+                gender: gender,
                 height: heightCm,
                 weight: weightKg,
-                bodyFat: bodyFatPercentage.toFixed(2),
-                neck: neck,
-                waist: waist,
-                hip: hip,
+                bodyFat: bodyFat,
+                neck: isNaN(neck) ? null : neck,
+                waist: isNaN(waist) ? null : waist,
+                hip: isNaN(hip) ? null : hip,
                 comment: comment
             };
-            
-            appData.progress.push(progressEntry);
+
+            appData.progress.push(newProgress);
             saveAppData();
             renderProgressGraphs();
             document.getElementById('progress-form').reset();
             document.getElementById('body-fat').value = '';
         });
 
-        // Actualiza el valor de grasa corporal en tiempo real
+        // Updates body fat percentage in real time
         document.getElementById('progress-form').addEventListener('input', () => {
             const age = parseFloat(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
@@ -1029,6 +1132,22 @@
             }
         });
 
+        // Form to save comments
+        document.getElementById('comment-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newComment = document.getElementById('new-comment-text').value.trim();
+            if (newComment) {
+                appData.comments.push(newComment);
+                saveAppData();
+                renderComments();
+                document.getElementById('new-comment-text').value = '';
+            }
+        });
+        
+        // Theme toggle
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+        // Initial load
         window.addEventListener('load', () => {
             loadAppData();
             updateSummary();
@@ -1036,6 +1155,7 @@
             renderProgressGraphs();
             renderComments();
             updateExerciseChartSelector();
+            setupTheme();
         });
 
     </script>
