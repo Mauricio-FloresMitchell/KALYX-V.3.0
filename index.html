@@ -372,10 +372,55 @@
             </button>
         </div>
     </div>
+
+    <!-- Modal para las notas de actualización -->
+    <div id="update-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-[9999]">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-xl w-full">
+            <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
+                <h3 class="text-2xl font-bold">Novedades de la Versión <span id="update-version"></span></h3>
+                <button class="text-gray-400 hover:text-white" onclick="closeUpdateModal()">&times;</button>
+            </div>
+            <div id="update-content" class="space-y-4 text-gray-300 max-h-96 overflow-y-auto">
+                <!-- Contenido de la actualización se generará aquí -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="closeUpdateModal()">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
     
     <script>
         // Data structure
         const DAYS_OF_WEEK = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+        const APP_VERSION = "V.A.3.5"; // Versión actual de la aplicación
+
+        // Notas de la versión para el modal
+        const updateNotes = {
+            version: APP_VERSION,
+            features: [
+                "**Resumen Semanal:** Un vistazo rápido a tu progreso y rutinas.",
+                "**Temporizador de Descanso:** Controla tus pausas con un temporizador que te notifica.",
+                "**Rutinas y Ejercicios:** Crea, edita y elimina rutinas por día de la semana. Añade ejercicios, series, repeticiones y enlaces a videos de YouTube.",
+                "**Carga Evolutiva:** Registra el peso que levantas en cada ejercicio y visualiza tu progreso en un gráfico.",
+                "**Progreso Semanal:** Mantén un registro de tus medidas corporales, peso, IMC y porcentaje de grasa corporal. Visualiza tu evolución en gráficos claros.",
+                "**Comentarios y Notas:** Escribe notas personales para llevar un registro de tu entrenamiento, sensaciones o cualquier otra información relevante.",
+                "**Modo Claro/Oscuro:** Cambia el tema de la aplicación para una mejor experiencia visual.",
+            ],
+            improvements: [
+                "El temporizador de descanso ahora te avisará a los 5 segundos de terminar.",
+                "Ahora puedes registrar la carga de tus ejercicios y ver tu progreso con gráficos.",
+                "Se añadió una sección para que añadas notas y comentarios personalizados.",
+                "Se implementó una nueva paleta de colores para el modo claro."
+            ],
+            fixes: [
+                "Se solucionó el error de 'onConfirm is not defined' en las confirmaciones.",
+                "Mejoras en la estabilidad y el rendimiento general de la aplicación.",
+                "Interfáz de usuario más fluida y responsiva."
+            ]
+        };
+
         let appData = {
             routines: {
                 "Lunes": { exercises: [] },
@@ -1013,6 +1058,69 @@
             }
         }
 
+        // --- Update Modal Functions ---
+
+        // Shows the update modal with the latest changes
+        function showUpdateModal() {
+            const lastSeenVersion = localStorage.getItem('kalyxLastSeenVersion');
+
+            // Solo mostrar si la versión actual es diferente a la última vista
+            if (lastSeenVersion !== APP_VERSION) {
+                document.getElementById('update-version').textContent = updateNotes.version;
+                const contentContainer = document.getElementById('update-content');
+                contentContainer.innerHTML = ''; // Limpiar contenido previo
+
+                // Renderizar funcionalidades principales
+                if (updateNotes.features && updateNotes.features.length > 0) {
+                    contentContainer.innerHTML += '<h4 class="text-xl font-bold text-purple-300">Funcionalidades Principales:</h4>';
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside space-y-1 ml-4';
+                    updateNotes.features.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = item;
+                        ul.appendChild(li);
+                    });
+                    contentContainer.appendChild(ul);
+                }
+
+                // Renderizar mejoras
+                if (updateNotes.improvements && updateNotes.improvements.length > 0) {
+                    contentContainer.innerHTML += '<h4 class="text-xl font-bold mt-4 text-blue-300">Nuevas Características:</h4>';
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside space-y-1 ml-4';
+                    updateNotes.improvements.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = item;
+                        ul.appendChild(li);
+                    });
+                    contentContainer.appendChild(ul);
+                }
+
+                // Renderizar arreglos
+                if (updateNotes.fixes && updateNotes.fixes.length > 0) {
+                    contentContainer.innerHTML += '<h4 class="text-xl font-bold mt-4 text-green-300">Arreglos y Optimizaciones:</h4>';
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside space-y-1 ml-4';
+                    updateNotes.fixes.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = item;
+                        ul.appendChild(li);
+                    });
+                    contentContainer.appendChild(ul);
+                }
+
+                document.getElementById('update-modal').classList.remove('hidden');
+                document.getElementById('update-modal').classList.add('flex');
+            }
+        }
+
+        // Closes the update modal and saves the current version to localStorage
+        function closeUpdateModal() {
+            localStorage.setItem('kalyxLastSeenVersion', APP_VERSION);
+            document.getElementById('update-modal').classList.add('hidden');
+            document.getElementById('update-modal').classList.remove('flex');
+        }
+
         // --- Event Listeners ---
         
         // Timer controls
@@ -1156,6 +1264,7 @@
             renderComments();
             updateExerciseChartSelector();
             setupTheme();
+            showUpdateModal(); // Llama al modal de actualizaciones al cargar la página
         });
 
     </script>
