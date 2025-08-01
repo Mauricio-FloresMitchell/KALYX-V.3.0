@@ -1,10 +1,15 @@
-💪 KALYX – App Web de Entrenamiento Personalizado (Versión de Prueba V.A.3.4)
+💪 KALYX – App Web de Entrenamiento Personalizado (Versión de Prueba V.A.3.5)
 KALYX es una app web responsive enfocada en ofrecer una experiencia personalizada de entrenamiento, seguimiento de progreso físico y control de rutinas. Está pensada para usuarios que desean gestionar su entrenamiento de forma práctica, visual y autónoma desde cualquier dispositivo.
 
 🚧 Estado del Proyecto
-Esta es una versión de prueba APLHA V.A.3.4 de KALYX, desarrollada como prototipo funcional. Todos los datos se almacenan únicamente en el navegador local del usuario mediante localStorage.
+Esta es una versión de prueba ALPHA V.A.3.5 de KALYX, desarrollada como prototipo funcional. Todos los datos se almacenan únicamente en el navegador local del usuario mediante localStorage.
 
 No se requiere registro ni conexión a base de datos externa.
+
+🎯 Novedades en V.A.3.5
+Modal de Novedades al Iniciar: Ahora, al cargar la aplicación por primera vez con una nueva versión, se mostrará automáticamente un modal con las novedades, mejoras y arreglos implementados.
+
+Corrección de Usabilidad en Modales: Se ha solucionado un problema por el cual los modales (como el de alerta y el de novedades) podían tapar toda la pantalla en algunos dispositivos, impidiendo que el usuario pudiera cerrarlos. Ahora los controles están siempre visibles y se adaptan mejor a la pantalla.
 
 🎯 Funcionalidades Principales
 📅 Plan Semanal
@@ -36,6 +41,8 @@ Temporizador global para intervalos entre series.
 Controles de pausa y reinicio.
 
 Visual optimizado para pantallas móviles y escritorio.
+
+Notificación de 5 segundos antes de terminar el descanso.
 
 📊 Progreso Corporal Semanal
 Registro de peso, altura, cuello, cintura y caderas.
