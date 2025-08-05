@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan de Entrenamiento PRO</title>
+    <title>KALYX - App de Entrenamiento (Versión Alpha V.A.4.2.)</title>
+    <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Bibliotecas para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vercel/analytics/dist/script.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -18,708 +19,484 @@
             color: #f1f5f9; /* slate-100 */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        .section-padding {
-            padding: 4rem 1rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .heading-primary {
-            font-size: 3rem;
-            font-weight: 900;
-            line-height: 1.2;
-            letter-spacing: -0.05em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .text-gradient {
-            background-image: linear-gradient(to right, #6EE7B7, #3B82F6, #9333EA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .card {
-            background-color: #2d3748; /* gray-800 */
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .button {
-            border-radius: 9999px;
-            font-weight: 700;
-            padding: 0.75rem 1.5rem;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out;
-        }
-        .collapsible-content.active {
-            max-height: 1000px; /* Suficientemente grande para cualquier contenido */
-        }
-        .collapsible-arrow {
-            transition: transform 0.3s ease-in-out;
-        }
-        .collapsible-arrow.rotate {
-            transform: rotate(180deg);
-        }
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-        }
-        .aspect-w-16 {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-        }
-        .aspect-h-9 {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+
+        body.light {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #1a202c; /* gray-900 */
         }
 
-        /* --- Estilos para el Modo Claro (Light Mode) --- */
-        body.light-mode {
-            background-color: #f8efb3; /* color5 */
-            color: #20a8d8; /* color1 */
+        .card {
+            background-color: #2d3748; /* gray-800 */
+            border-radius: 1.5rem; /* rounded-3xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-px rgba(0, 0, 0, 0.06);
         }
-        body.light-mode .bg-gray-900 {
-            background-color: #f6dda6; /* color4 */
+
+        .light .card {
+            background-color: #ffffff; /* white */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        body.light-mode .bg-gray-800 {
-            background-color: #f6a4cb; /* color3 */
+
+        .header-bg {
+            background-image: url('https://placehold.co/1200x400/2d3748/ffffff?text=KALYX+PRO');
+            background-size: cover;
+            background-position: center;
         }
-        body.light-mode .text-slate-100 {
-            color: #20a8d8; /* color1 */
+        .light .header-bg {
+            background-image: url('https://placehold.co/1200x400/ffffff/2d3748?text=KALYX+PRO');
         }
-        body.light-mode .text-gray-900 {
-            color: #20a8d8;
+
+        #routines-list li {
+            background-color: #4a5568;
+            border-radius: 0.75rem;
         }
-        body.light-mode .text-white {
-            color: #20a8d8;
-        }
-        body.light-mode .card {
-            background-color: #f6dda6; /* color4 */
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        }
-        body.light-mode .bg-gray-700 {
-            background-color: #f496e9; /* color2 */
-        }
-        body.light-mode .border-gray-700 {
-            border-color: #f496e9;
-        }
-        body.light-mode .text-gray-300,
-        body.light-mode .text-gray-400,
-        body.light-mode .text-gray-500 {
-            color: #20a8d8;
-        }
-        body.light-mode .placeholder-gray-500::placeholder {
-            color: #20a8d8;
-        }
-        body.light-mode .bg-blue-600 {
-            background-color: #20a8d8;
-        }
-        body.light-mode .hover\:bg-blue-700:hover {
-            background-color: #f496e9;
-        }
-        body.light-mode .bg-green-600 {
-            background-color: #f6a4cb;
-        }
-        body.light-mode .hover\:bg-green-700:hover {
-            background-color: #f6dda6;
-        }
-        body.light-mode .bg-red-600 {
-            background-color: #f496e9;
-        }
-        body.light-mode .hover\:bg-red-700:hover {
-            background-color: #f6a4cb;
-        }
-        body.light-mode .border-b-2 {
-            border-color: #20a8d8;
-        }
-        body.light-mode .ring-offset-gray-800 {
-            --tw-ring-offset-color: #f6a4cb;
+
+        .light #routines-list li {
+            background-color: #e2e8f0;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-slate-100">
-
-    <header class="bg-gray-800 text-slate-100 py-6 px-4">
-        <div class="flex justify-between items-center max-w-7xl mx-auto">
-            <h1 class="text-3xl font-black uppercase tracking-wider">KALYX Transforma y avanza</h1>
-            <button id="theme-toggle" class="p-2 rounded-full text-slate-100 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white transition-colors duration-200" aria-label="Toggle theme">
-                <svg id="moon-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-                <svg id="sun-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <main class="section-padding">
-        
-        <section id="resumen-semanal" class="mb-12">
-            <h2 class="text-3xl font-bold mb-6 text-center">Resumen Semanal</h2>
-            <div class="grid md:grid-cols-3 gap-6 text-center">
-                <div class="card p-6">
-                    <p class="text-gray-400">Día de Hoy</p>
-                    <p id="dia-hoy" class="text-white text-2xl font-semibold mt-1">Lunes</p>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="goToRoutine('Lunes')">Ver Rutina</button>
-                </div>
-                <div class="card p-6">
-                    <p class="text-gray-400">Progreso Semanal</p>
-                    <p id="progreso-semanal-display" class="text-white text-2xl font-semibold mt-1">0%</p>
-                    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="location.href='#progreso'">Ver Detalle</button>
-                </div>
-                <div class="card p-6">
-                    <p class="text-gray-400">Total de Ejercicios</p>
-                    <p id="ejercicios-total-display" class="text-white text-2xl font-semibold mt-1">0</p>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4 transition-transform transform hover:scale-105" onclick="location.href='#rutinas'">Ver Todas</button>
-                </div>
+<body class="light">
+    <!-- Modal de Actualización -->
+    <div id="update-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="card w-full md:w-1/2 p-6 md:p-8">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Notas de la Versión Alpha V.A.4.2.</h3>
+            <div class="space-y-3 text-sm md:text-base">
+                <p>¡Hola! Se han implementado mejoras significativas en la experiencia de usuario y nuevas funciones:</p>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>Se agregó la funcionalidad de **marcar ejercicios como completados** para llevar un mejor seguimiento de tu progreso diario.</li>
+                    <li>Ahora puedes ver tu **progreso semanal en porcentaje**, dándote una visión clara de tu consistencia.</li>
+                    <li>Nueva sección de **"Racha" semanal** que evalúa tu nivel de compromiso.</li>
+                    <li>Mejoras generales de la interfaz para una navegación más fluida.</li>
+                    <li>**Se ha corregido un error** que impedía borrar ejercicios correctamente. Ahora se utiliza un modal de confirmación.</li>
+                    <li>**Se ha implementado la funcionalidad de registro de progreso de peso** en los gráficos al marcar un ejercicio como completado.</li>
+                    <li>**Mejoras en la UX/UI con un nuevo tema claro y visual más dinamico</li>
+                </ul>
             </div>
-        </section>
-
-        <section id="temporizador" class="mb-12 flex flex-col items-center">
-            <div class="card p-8 text-center w-full md:w-2/3 lg:w-1/2">
-                <h3 class="text-lg font-bold text-gray-300">Temporizador de Descanso</h3>
-                <p id="timer-exercise-name" class="text-lg text-white font-semibold mb-2 hidden"></p>
-                <p id="global-timer-display" class="text-6xl font-black mt-2 mb-4">03:00</p>
-                <div id="timer-controls" class="flex justify-center space-x-4">
-                    <button id="timer-start-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
-                        Iniciar
-                    </button>
-                    <button id="timer-pause-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
-                        Pausar
-                    </button>
-                    <button id="timer-reset-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed">
-                        Reiniciar
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <section id="rutinas" class="mb-12">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold">Detalle de Rutinas</h2>
-            </div>
-            <div id="rutinas-container">
-                </div>
-            
-            <div id="routine-editor-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
-                <div class="card w-full max-w-2xl p-6">
-                    <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
-                        <h3 class="text-2xl font-bold">Editar Rutina: <span id="editor-routine-title"></span></h3>
-                        <button onclick="closeRoutineEditor()" class="text-gray-400 hover:text-white">&times;</button>
-                    </div>
-                    <div id="editable-exercise-list" class="space-y-4 mb-4 max-h-64 overflow-y-auto">
-                        </div>
-                    <form id="exercise-form" class="mt-4 space-y-4">
-                        <h4 class="text-xl font-semibold">Añadir/Editar Ejercicio</h4>
-                        <div>
-                            <input type="hidden" id="exercise-index">
-                            <input type="text" id="exercise-name-input" placeholder="Nombre del ejercicio" class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <input type="number" id="exercise-sets-input" placeholder="Series" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <input type="number" id="exercise-reps-input" placeholder="Repeticiones" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <input type="text" id="exercise-video-url-input" placeholder="URL del video (YouTube)" class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div class="flex justify-end space-x-2">
-                            <button type="submit" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Ejercicio</button>
-                            <button type="button" onclick="clearExerciseForm()" class="button bg-gray-600 hover:bg-gray-700 text-white">Limpiar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="load-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50">
-                <div class="card w-full max-w-sm p-6">
-                    <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
-                        <h3 class="text-2xl font-bold">Registrar Carga</h3>
-                        <button onclick="closeLoadModal()" class="text-gray-400 hover:text-white">&times;</button>
-                    </div>
-                    <form id="load-form" class="mt-4 space-y-4">
-                        <div>
-                            <label for="load-weight-input" class="block text-gray-400">Peso (kg)</label>
-                            <input type="number" id="load-weight-input" placeholder="Ej: 50" class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <input type="hidden" id="load-day-input">
-                            <input type="hidden" id="load-exercise-name-input">
-                        </div>
-                        <div class="flex justify-end space-x-2">
-                            <button type="submit" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <section id="evolutionary-load" class="mb-12">
-            <h2 class="text-3xl font-bold mb-6 text-center">Carga Evolutiva</h2>
-            <div class="card p-6">
-                <h3 class="text-xl font-semibold mb-4">Selecciona un ejercicio para ver su progreso</h3>
-                <select id="exercise-chart-selector" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></select>
-                <div class="chart-container">
-                    <div id="evolutionary-load-message" class="text-center text-gray-400 p-4" style="display: none;">No hay datos de carga para mostrar. Registra cargas en tus ejercicios para ver el progreso.</div>
-                    <canvas id="evolutionary-load-chart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <section id="progreso" class="mb-12">
-            <h2 class="text-3xl font-bold mb-6 text-center">Progreso Semanal</h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="card p-6">
-                    <h3 class="text-xl font-semibold mb-4">Peso e IMC</h3>
-                    <div class="chart-container">
-                        <canvas id="weight-imc-chart"></canvas>
-                    </div>
-                </div>
-                <div class="card p-6">
-                    <h3 class="text-xl font-semibold mb-4">Medidas y % de Grasa Corporal</h3>
-                    <div class="chart-container">
-                        <canvas id="measurements-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="card p-6 mt-6">
-                <h3 class="text-2xl font-bold mb-4">Actualizar Medidas</h3>
-                <form id="progress-form" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label for="age" class="block text-gray-400">Edad</label>
-                        <input type="number" id="age" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="gender" class="block text-gray-400">Género</label>
-                        <select id="gender" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="male">Hombre</option>
-                            <option value="female">Mujer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="height" class="block text-gray-400">Altura (cm)</label>
-                        <input type="number" id="height" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="weight" class="block text-gray-400">Peso (kg)</label>
-                        <input type="number" id="weight" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="body-fat" class="block text-gray-400">% Grasa Corporal</label>
-                        <input type="number" id="body-fat" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none" readonly>
-                    </div>
-                    <div>
-                        <label for="neck" class="block text-gray-400">Cuello (cm)</label>
-                        <input type="number" id="neck" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="waist" class="block text-gray-400">Cintura (cm)</label>
-                        <input type="number" id="waist" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="hip" class="block text-gray-400">Cadera (cm)</label>
-                        <input type="number" id="hip" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="lg:col-span-3">
-                        <label for="comment-progress" class="block text-gray-400">Comentario</label>
-                        <textarea id="comment-progress" class="w-full p-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
-                    </div>
-                    <div class="lg:col-span-3 flex justify-end space-x-2">
-                        <button type="submit" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Progreso</button>
-                        <button type="button" class="button bg-red-600 hover:bg-red-700 text-white" onclick="document.getElementById('progress-form').reset()">Limpiar</button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <section id="comentarios" class="mb-12">
-            <h2 class="text-3xl font-bold mb-6 text-center">Comentarios y Notas</h2>
-            <div class="card p-6">
-                <form id="comment-form" class="mb-4 space-y-4">
-                    <div>
-                        <textarea id="new-comment-text" placeholder="Añade una nueva nota..." class="w-full p-2 bg-gray-700 text-white rounded-md placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="button bg-blue-600 hover:bg-blue-700 text-white">Guardar Nota</button>
-                    </div>
-                </form>
-                <div id="comments-container" class="space-y-4">
-                    </div>
-            </div>
-        </section>
-
-    </main>
-    
-    <footer class="bg-gray-800 text-center py-4 text-gray-400">
-        <p>Hecho con ❤️ por KALYX</p>
-        <div class="mt-4">
-            <p class="text-white text-lg">Ayúdanos a mejorar la aplicación contestando nuestra encuesta:</p>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRlHiksitm3pRbX_mTVmfvHI1TgYj0pNkTBF1JYPUqKh8QOA/viewform?usp=sharing&ouid=112515614967826708032" target="_blank" class="text-blue-400 hover:underline font-bold">
-                ¡Contesta la encuesta aquí!
-            </a>
-        </div>
-    </footer>
-
-    <div id="custom-alert-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-[9999]">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-sm w-full text-center">
-            <p id="custom-alert-message" class="text-lg mb-4"></p>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="closeCustomAlert()">
-                Aceptar
+            <button id="close-modal-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                Entendido
             </button>
         </div>
     </div>
+    
+    <!-- Modal para agregar/editar ejercicio -->
+    <div id="exercise-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="card w-full md:w-1/2 p-6 md:p-8">
+            <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-4">Agregar Ejercicio</h3>
+            <form id="exercise-form" class="space-y-4">
+                <div>
+                    <label for="exercise-name" class="block text-sm font-medium text-gray-400 light:text-gray-600">Nombre del ejercicio</label>
+                    <input type="text" id="exercise-name" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                </div>
+                <div>
+                    <label for="exercise-sets" class="block text-sm font-medium text-gray-400 light:text-gray-600">Sets</label>
+                    <input type="number" id="exercise-sets" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                </div>
+                <div>
+                    <label for="exercise-reps" class="block text-sm font-medium text-gray-400 light:text-gray-600">Reps</label>
+                    <input type="number" id="exercise-reps" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                </div>
+                <div>
+                    <label for="exercise-weights" class="block text-sm font-medium text-gray-400 light:text-gray-600">Pesos (separados por comas)</label>
+                    <input type="text" id="exercise-weights" placeholder="Ej: 60,65,70" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="button" id="cancel-exercise-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="save-exercise-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- Modal para las notas de actualización -->
-    <div id="update-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-[9999]">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-xl w-full">
-            <div class="flex justify-between items-center mb-4 border-b-2 border-gray-700 pb-2">
-                <h3 class="text-2xl font-bold">Novedades de la Versión <span id="update-version"></span></h3>
-                <button class="text-gray-400 hover:text-white" onclick="closeUpdateModal()">&times;</button>
-            </div>
-            <div id="update-content" class="space-y-4 text-gray-300 max-h-96 overflow-y-auto">
-                <!-- Contenido de la actualización se generará aquí -->
-            </div>
-            <div class="mt-6 flex justify-end">
-                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick="closeUpdateModal()">
-                    Entendido
+    <!-- Modal de Confirmación de Borrado -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="card w-full md:w-1/3 p-6 md:p-8 text-center">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Confirmar Eliminación</h3>
+            <p class="text-gray-400 light:text-gray-600 mb-6">¿Estás seguro de que quieres eliminar este ejercicio?</p>
+            <div class="flex space-x-4">
+                <button id="cancel-delete-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                    Cancelar
+                </button>
+                <button id="confirm-delete-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                    Eliminar
                 </button>
             </div>
         </div>
     </div>
     
+    <div class="container mx-auto p-4 md:p-8 space-y-8">
+        <!-- Encabezado -->
+        <header class="header-bg bg-cover bg-center rounded-3xl p-6 md:p-8 text-white">
+            <div class="backdrop-blur-sm bg-gray-900 bg-opacity-50 rounded-2xl p-4 md:p-6 text-center">
+                <h1 class="text-2xl md:text-5xl font-black mb-2">KALYX</h1>
+                <p class="text-sm md:text-lg font-light mb-4">App de Entrenamiento PRO (Versión Alpha V.A.4.2.)</p>
+            </div>
+        </header>
+
+        <!-- Controles globales -->
+        <div class="flex justify-between items-center space-x-2 md:space-x-4">
+            <div id="days-selector" class="flex-grow flex justify-around space-x-1">
+                <!-- Los botones de los días se generarán aquí -->
+            </div>
+            <button id="theme-toggle-btn" class="p-3 md:p-4 rounded-full bg-gray-700 light:bg-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white light:text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Sección de Rutinas -->
+                <section class="card p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl md:text-2xl font-bold">Rutina de Hoy</h2>
+                        <div class="space-x-2">
+                            <button id="add-exercise-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full transition-colors text-sm">
+                                Agregar
+                            </button>
+                            <button id="edit-routine-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full transition-colors text-sm">
+                                Editar
+                            </button>
+                        </div>
+                    </div>
+                    <ul id="routines-list" class="space-y-4">
+                        <!-- Las rutinas se generarán aquí -->
+                    </ul>
+                </section>
+                
+                <!-- Sección de Racha Semanal -->
+                <section id="streak-section" class="card p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl md:text-2xl font-bold">Tu Racha Semanal</h2>
+                        <span id="streak-level" class="px-3 py-1 rounded-full text-sm font-semibold text-white"></span>
+                    </div>
+                    <p id="streak-message" class="text-md text-gray-400 light:text-gray-600 mb-4"></p>
+                    <div class="w-full h-2 bg-gray-700 light:bg-gray-200 rounded-full">
+                        <div id="streak-progress-bar" class="h-2 bg-blue-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                </section>
+                
+                <!-- Sección de Gráficos de Progreso -->
+                <section class="card p-6 md:p-8">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso de Peso</h2>
+                    <div class="mb-4 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
+                        <label for="exercise-chart-selector" class="text-sm font-semibold text-gray-400 light:text-gray-600">Selecciona un ejercicio:</label>
+                        <select id="exercise-chart-selector" class="flex-grow bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 p-2 rounded-lg"></select>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="progress-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Nueva Sección de Progreso Corporal Semanal -->
+                <section class="card p-6 md:p-8">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso Corporal Semanal</h2>
+                    <form id="body-progress-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="progress-date" class="block text-sm font-medium text-gray-400 light:text-gray-600">Fecha</label>
+                            <input type="date" id="progress-date" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
+                        </div>
+                        <div>
+                            <label for="progress-weight" class="block text-sm font-medium text-gray-400 light:text-gray-600">Peso (kg)</label>
+                            <input type="number" step="0.1" id="progress-weight" placeholder="Ej: 75.5" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
+                        </div>
+                        <div>
+                            <label for="progress-height" class="block text-sm font-medium text-gray-400 light:text-gray-600">Altura (cm)</label>
+                            <input type="number" step="0.1" id="progress-height" placeholder="Ej: 175" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
+                        </div>
+                        <div>
+                            <label for="progress-age" class="block text-sm font-medium text-gray-400 light:text-gray-600">Edad</label>
+                            <input type="number" id="progress-age" placeholder="Ej: 30" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
+                        </div>
+                        <div>
+                            <label for="progress-gender" class="block text-sm font-medium text-gray-400 light:text-gray-600">Género</label>
+                            <select id="progress-gender" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
+                                <option value="" disabled selected>Selecciona</option>
+                                <option value="1">Masculino</option>
+                                <option value="0">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 mt-4">
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                                Guardar Progreso
+                            </button>
+                        </div>
+                    </form>
+
+                    <h3 class="text-lg md:text-xl font-bold mb-2 mt-8">Historial de Peso (kg)</h3>
+                    <div class="h-64 mb-8">
+                        <canvas id="weight-history-chart"></canvas>
+                    </div>
+
+                    <h3 class="text-lg md:text-xl font-bold mb-2">Historial de Grasa Corporal (%)</h3>
+                    <div class="h-64">
+                        <canvas id="bodyfat-history-chart"></canvas>
+                    </div>
+                </section>
+
+            </div>
+            
+            <div class="lg:col-span-1 space-y-8">
+                <!-- Resumen de la semana -->
+                <section class="card p-6 md:p-8">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Resumen de la semana</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Ejercicios Completados:</span>
+                            <span id="completed-exercises" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Volumen Total (kg):</span>
+                            <span id="total-volume" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
+                            <span id="total-time" class="font-bold text-lg">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Temporizador de descanso -->
+                <section class="card p-6 md:p-8 text-center">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
+                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">00:00</div>
+                    <div class="flex justify-center space-x-4">
+                        <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Iniciar
+                        </button>
+                        <button id="pause-timer-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Pausar
+                        </button>
+                        <button id="reset-timer-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Reiniciar
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Formulario de comentarios -->
+                <section class="card p-6 md:p-8">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Comentarios y Notas</h2>
+                    <div id="comments-list" class="space-y-4 mb-4 text-sm max-h-64 overflow-y-auto">
+                        <!-- Los comentarios se generarán aquí -->
+                    </div>
+                    <form id="comment-form" class="space-y-4">
+                        <textarea id="new-comment-text" rows="3" placeholder="Agrega una nota..." class="w-full bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Agregar Nota
+                        </button>
+                    </form>
+                </section>
+            </div>
+        </main>
+
+        <!-- Pie de página -->
+        <footer class="text-center text-gray-500 light:text-gray-400 text-sm mt-8">
+            <p>&copy; 2025 KALYX. Todos los derechos reservados.</p>
+            <p class="mt-2">¡Ayúdanos a mejorar! Responde nuestra <a href="https://forms.gle/r2gMpg3Q4sW95afLA" target="_blank" class="text-blue-500 hover:underline">encuesta sobre la app</a> para darnos tus comentarios.</p>
+        </footer>
+    </div>
+    
     <script>
-        // Data structure
-        const DAYS_OF_WEEK = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-        const APP_VERSION = "V.A.3.5"; // Versión actual de la aplicación
-
-        // Notas de la versión para el modal
-        const updateNotes = {
-            version: APP_VERSION,
-            features: [
-                "**Resumen Semanal:** Un vistazo rápido a tu progreso y rutinas.",
-                "**Temporizador de Descanso:** Controla tus pausas con un temporizador que te notifica.",
-                "**Rutinas y Ejercicios:** Crea, edita y elimina rutinas por día de la semana. Añade ejercicios, series, repeticiones y enlaces a videos de YouTube.",
-                "**Carga Evolutiva:** Registra el peso que levantas en cada ejercicio y visualiza tu progreso en un gráfico.",
-                "**Progreso Semanal:** Mantén un registro de tus medidas corporales, peso, IMC y porcentaje de grasa corporal. Visualiza tu evolución en gráficos claros.",
-                "**Comentarios y Notas:** Escribe notas personales para llevar un registro de tu entrenamiento, sensaciones o cualquier otra información relevante.",
-                "**Modo Claro/Oscuro:** Cambia el tema de la aplicación para una mejor experiencia visual.",
-            ],
-            improvements: [
-                "El temporizador de descanso ahora te avisará a los 5 segundos de terminar.",
-                "Ahora puedes registrar la carga de tus ejercicios y ver tu progreso con gráficos.",
-                "Se añadió una sección para que añadas notas y comentarios personalizados.",
-                "Se implementó una nueva paleta de colores para el modo claro."
-            ],
-            fixes: [
-                "Se solucionó el error de 'onConfirm is not defined' en las confirmaciones.",
-                "Mejoras en la estabilidad y el rendimiento general de la aplicación.",
-                "Interfáz de usuario más fluida y responsiva."
-            ]
-        };
-
+        // Declaración de variables globales
+        const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        
         let appData = {
-            routines: {
-                "Lunes": { exercises: [] },
-                "Martes": { exercises: [] },
-                "Miércoles": { exercises: [] },
-                "Jueves": { exercises: [] },
-                "Viernes": { exercises: [] },
-                "Sábado": { exercises: [] },
-                "Domingo": { exercises: [] }
-            },
-            progress: [],
+            routines: daysOfWeek.map(() => []),
+            progress: {},
             comments: [],
-            evolutionaryLoad: {}
+            weekStart: null,
+            bodyProgress: []
         };
+        
+        let currentDay = new Date().getDay();
+        currentDay = currentDay === 0 ? 6 : currentDay - 1; // 0=Domingo -> 6, 1=Lunes -> 0
 
-        let currentEditingDay = '';
-        let timerInterval;
-        let timerSeconds = 180;
-        let isTimerRunning = false;
-        let evolutionaryLoadChart;
-        let weightImcChart;
-        let measurementsChart;
+        let isEditMode = false;
+        let exerciseToEditIndex = null;
+        let exerciseToDeleteIndex = null; // Variable para almacenar el índice del ejercicio a borrar
+        
+        let timerRunning = false;
+        let timerSeconds = 0;
+        let timerInterval = null;
 
-        // --- Core Functions ---
-
-        // Loads data from localStorage
-        function loadAppData() {
-            const storedData = localStorage.getItem('kalyxAppData');
-            if (storedData) {
-                appData = JSON.parse(storedData);
-            } else {
-                // Initialize with empty data if nothing is stored
-                appData = {
-                    routines: {
-                        "Lunes": { exercises: [] },
-                        "Martes": { exercises: [] },
-                        "Miércoles": { exercises: [] },
-                        "Jueves": { exercises: [] },
-                        "Viernes": { exercises: [] },
-                        "Sábado": { exercises: [] },
-                        "Domingo": { exercises: [] }
-                    },
-                    progress: [],
-                    comments: [],
-                    evolutionaryLoad: {}
-                };
-                saveAppData(); // Save the initial empty structure
-            }
+        // Funciones de utilidad
+        function getWeekStartDate() {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(now.setDate(diff));
         }
 
-        // Saves data to localStorage
+        function getProgressPercentage(total, completed) {
+            return total > 0 ? Math.round((completed / total) * 100) : 0;
+        }
+
+        // Carga y guarda datos
+        function loadAppData() {
+            const savedData = JSON.parse(localStorage.getItem('kalyxAppData'));
+            const weekStartDate = getWeekStartDate().toISOString().split('T')[0];
+
+            if (savedData && savedData.weekStart === weekStartDate) {
+                appData = savedData;
+            } else {
+                appData.routines = daysOfWeek.map(() => []);
+                appData.progress = {};
+                appData.comments = [];
+                appData.weekStart = weekStartDate;
+                appData.bodyProgress = [];
+            }
+            saveAppData();
+        }
+
         function saveAppData() {
             localStorage.setItem('kalyxAppData', JSON.stringify(appData));
         }
 
-        // Updates weekly summary
-        function updateSummary() {
-            const today = new Date();
-            const dayOfWeekIndex = today.getDay(); // 0 for Sunday, 1 for Monday, etc.
-            const displayDay = DAYS_OF_WEEK[dayOfWeekIndex === 0 ? 6 : dayOfWeekIndex - 1]; // Adjust for 0-indexed array starting Monday
-            document.getElementById('dia-hoy').innerText = displayDay || 'Día de descanso';
-            
-            let totalExercises = 0;
-            let completedRoutines = 0;
-            
-            for (const day in appData.routines) {
-                if (appData.routines[day].exercises.length > 0) {
-                    totalExercises += appData.routines[day].exercises.length;
-                    completedRoutines++; // A routine is considered "completed" if it has exercises for simplicity
-                }
-            }
-
-            const progressPercentage = DAYS_OF_WEEK.length > 0 ? (completedRoutines / DAYS_OF_WEEK.length * 100).toFixed(0) : 0;
-            document.getElementById('progreso-semanal-display').innerText = `${progressPercentage}%`;
-            document.getElementById('ejercicios-total-display').innerText = totalExercises;
-        }
-
-        // Renders routines section
+        // Renderizado de la UI
         function renderRoutines() {
-            const container = document.getElementById('rutinas-container');
-            container.innerHTML = '';
-            DAYS_OF_WEEK.forEach(day => {
-                const routine = appData.routines[day];
-                const totalExercises = routine.exercises.length;
-                const routineElement = document.createElement('div');
-                routineElement.className = 'card p-6 mb-4';
-                routineElement.innerHTML = `
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-2xl font-bold">${day}</h3>
-                        <div class="flex space-x-2">
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="openRoutineEditor('${day}')">
-                                Editar
-                            </button>
-                            <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteRoutine('${day}')">
-                                Eliminar
-                            </button>
-                            <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-full text-sm collapsible-toggle" data-target="routine-${day}-content">
-                                <span class="collapsible-arrow inline-block">▼</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="routine-${day}-content" class="collapsible-content">
-                        <p class="text-gray-400 text-sm mb-2">${totalExercises} ejercicios</p>
-                        <div class="space-y-4">
-                            ${routine.exercises.map((exercise, index) => `
-                                <div class="p-4 bg-gray-700 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between">
-                                    <div>
-                                        <p class="text-lg font-semibold">${exercise.name}</p>
-                                        <p class="text-gray-400 text-sm">${exercise.sets} series x ${exercise.reps} repeticiones</p>
-                                        ${exercise.videoUrl ? `<a href="${exercise.videoUrl}" target="_blank" class="text-blue-400 text-sm hover:underline">Ver video</a>` : ''}
-                                    </div>
-                                    <div class="flex items-center space-x-2 mt-2 md:mt-0">
-                                        <button class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="openLoadModal('${day}', '${exercise.name}')">
-                                            Registrar Carga
-                                        </button>
-                                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteExerciseFromRoutine('${day}', ${index})">
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(routineElement);
-            });
-            setupCollapsibles();
-        }
-
-        // Deletes an entire routine
-        function deleteRoutine(day) {
-            showConfirmation(`¿Estás seguro de que quieres eliminar la rutina del ${day}?`, () => {
-                appData.routines[day].exercises = [];
-                saveAppData();
-                renderRoutines();
-                updateSummary();
-            });
-        }
-        
-        // Deletes a single exercise from a routine
-        function deleteExerciseFromRoutine(day, index) {
-            showConfirmation(`¿Estás seguro de que quieres eliminar este ejercicio?`, () => {
-                appData.routines[day].exercises.splice(index, 1);
-                saveAppData();
-                renderRoutines();
-                updateSummary();
-                if (currentEditingDay === day) {
-                    renderEditableExerciseList();
-                }
-            });
-        }
-
-        // Renders the list of editable exercises in the modal
-        function renderEditableExerciseList() {
-            const container = document.getElementById('editable-exercise-list');
-            container.innerHTML = '';
-            const routine = appData.routines[currentEditingDay];
-            if (!routine || routine.exercises.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center">No hay ejercicios en esta rutina.</p>';
+            const routinesList = document.getElementById('routines-list');
+            routinesList.innerHTML = '';
+            const routinesForToday = appData.routines[currentDay] || [];
+            if (routinesForToday.length === 0) {
+                routinesList.innerHTML = '<li class="p-4 text-center text-gray-500 light:text-gray-400">¡Hoy es día de descanso o la rutina está vacía! 💪</li>';
                 return;
             }
-            routine.exercises.forEach((exercise, index) => {
-                const exerciseElement = document.createElement('div');
-                exerciseElement.className = 'p-4 bg-gray-700 rounded-lg flex justify-between items-center';
-                exerciseElement.innerHTML = `
-                    <p class="text-lg font-semibold">${exercise.name}</p>
-                    <div class="flex space-x-2">
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="editExercise(${index})">
-                            Editar
-                        </button>
-                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full text-sm" onclick="deleteExerciseFromRoutine('${currentEditingDay}', ${index})">
-                            Eliminar
-                        </button>
-                    </div>
-                `;
-                container.appendChild(exerciseElement);
-            });
-        }
-
-        // Opens the routine editor modal
-        function openRoutineEditor(day) {
-            currentEditingDay = day;
-            document.getElementById('editor-routine-title').innerText = day;
-            renderEditableExerciseList();
-            document.getElementById('routine-editor-modal').classList.remove('hidden');
-            document.getElementById('routine-editor-modal').classList.add('flex');
-        }
-
-        // Closes the routine editor modal
-        function closeRoutineEditor() {
-            document.getElementById('routine-editor-modal').classList.add('hidden');
-            document.getElementById('routine-editor-modal').classList.remove('flex');
-            clearExerciseForm();
-        }
-        
-        // Fills the form to edit an exercise
-        function editExercise(index) {
-            const exercise = appData.routines[currentEditingDay].exercises[index];
-            document.getElementById('exercise-index').value = index;
-            document.getElementById('exercise-name-input').value = exercise.name;
-            document.getElementById('exercise-sets-input').value = exercise.sets;
-            document.getElementById('exercise-reps-input').value = exercise.reps;
-            document.getElementById('exercise-video-url-input').value = exercise.videoUrl;
-        }
-
-        // Clears the exercise form in the modal
-        function clearExerciseForm() {
-            document.getElementById('exercise-form').reset();
-            document.getElementById('exercise-index').value = '';
-        }
-
-        // --- Timer Functions ---
-
-        function startTimer() {
-            if (isTimerRunning) return;
-            isTimerRunning = true;
-            document.getElementById('timer-start-btn').disabled = true;
-            document.getElementById('timer-pause-btn').disabled = false;
-            document.getElementById('timer-reset-btn').disabled = false;
-            
-            timerInterval = setInterval(() => {
-                timerSeconds--;
-                if (timerSeconds < 0) {
-                    resetTimer();
-                    showCustomAlert('¡Tiempo de descanso terminado!');
-                    return;
-                }
-                updateTimerDisplay();
+            routinesForToday.forEach((routine, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'flex items-center justify-between p-4';
                 
-                if (timerSeconds === 5) {
-                    showCustomAlert('¡Quedan 5 segundos de descanso!');
+                if (isEditMode) {
+                    listItem.innerHTML = `
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">${routine.name}</h3>
+                            <p class="text-sm text-gray-400 light:text-gray-600">${routine.sets} sets x ${routine.reps} reps @ ${routine.weights.join(', ')} kg</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="edit-exercise-btn bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-full transition-colors" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L15.232 5.232z" />
+                                </svg>
+                            </button>
+                            <button class="delete-exercise-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full transition-colors" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    listItem.innerHTML = `
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">${routine.name}</h3>
+                            <p class="text-sm text-gray-400 light:text-gray-600">${routine.sets} sets x ${routine.reps} reps @ ${routine.weights.join(', ')} kg</p>
+                        </div>
+                        <input type="checkbox" data-index="${index}" ${routine.completed ? 'checked' : ''} class="form-checkbox h-6 w-6 text-blue-600 light:text-blue-500 rounded-full border-gray-300 light:border-gray-500 focus:ring-blue-500 light:focus:ring-blue-500">
+                    `;
                 }
-            }, 1000);
+                
+                routinesList.appendChild(listItem);
+            });
         }
 
-        function pauseTimer() {
-            isTimerRunning = false;
-            clearInterval(timerInterval);
-            document.getElementById('timer-start-btn').disabled = false;
-            document.getElementById('timer-pause-btn').disabled = true;
-        }
+        function renderProgressGraphs() {
+            const ctx = document.getElementById('progress-chart').getContext('2d');
+            const exerciseName = document.getElementById('exercise-chart-selector').value;
+            const progressData = appData.progress[exerciseName] || [];
 
-        function resetTimer() {
-            isTimerRunning = false;
-            clearInterval(timerInterval);
-            timerSeconds = 180; // Reinicia a 3 minutos
-            updateTimerDisplay();
-            document.getElementById('timer-start-btn').disabled = false;
-            document.getElementById('timer-pause-btn').disabled = true;
-            document.getElementById('timer-reset-btn').disabled = true;
-        }
+            const labels = progressData.map(d => new Date(d.date));
+            const data = progressData.map(d => d.weight);
 
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timerSeconds / 60);
-            const seconds = timerSeconds % 60;
-            document.getElementById('global-timer-display').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-        
-        // --- Chart & Progress Functions ---
-
-        // Renders the evolutionary load chart for a specific exercise
-        function renderEvolutionaryLoadChart(exerciseName) {
-            const container = document.getElementById('evolutionary-load-chart');
-            const messageContainer = document.getElementById('evolutionary-load-message');
-            const data = appData.evolutionaryLoad[exerciseName] || [];
-
-            if (data.length === 0) {
-                if (evolutionaryLoadChart) {
-                    evolutionaryLoadChart.destroy();
-                    evolutionaryLoadChart = null; // Clear the chart instance
-                }
-                container.style.display = 'none';
-                messageContainer.style.display = 'block';
-                return;
+            if (window.myChart) {
+                window.myChart.destroy();
             }
 
-            // Hide message and show chart
-            container.style.display = 'block';
-            messageContainer.style.display = 'none';
-
-            if (evolutionaryLoadChart) {
-                evolutionaryLoadChart.destroy();
-            }
-
-            // Now, get the context again because the old one might be invalid after destroy
-            const ctx = container.getContext('2d');
-            
-            evolutionaryLoadChart = new Chart(ctx, {
+            window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(d => d.date),
+                    labels: labels,
                     datasets: [{
-                        label: 'Carga (kg)',
-                        data: data.map(d => d.weight),
-                        borderColor: 'rgb(102, 255, 102)',
-                        backgroundColor: 'rgba(102, 255, 102, 0.2)',
+                        label: `Peso en ${exerciseName} (kg)`,
+                        data: data,
+                        borderColor: '#2563eb', // blue-600
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
                         borderWidth: 2,
+                        tension: 0.4,
                         fill: true,
-                        tension: 0.1
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2563eb',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            ticks: {
+                                color: '#a0aec0' // gray-400
+                            },
+                            grid: {
+                                color: 'rgba(160, 174, 192, 0.2)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#a0aec0' // gray-400
+                            },
+                            grid: {
+                                color: 'rgba(160, 174, 192, 0.2)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e2e8f0' // slate-200
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderBodyProgressCharts() {
+            const weightCtx = document.getElementById('weight-history-chart').getContext('2d');
+            const bodyFatCtx = document.getElementById('bodyfat-history-chart').getContext('2d');
+            
+            const labels = appData.bodyProgress.map(d => new Date(d.date));
+            const weightData = appData.bodyProgress.map(d => d.weight);
+            const bodyFatData = appData.bodyProgress.map(d => d.bodyFat);
+
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+            if (window.bodyFatChart) {
+                window.bodyFatChart.destroy();
+            }
+
+            window.weightChart = new Chart(weightCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peso (kg)',
+                        data: weightData,
+                        borderColor: '#2563eb', // blue-600
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2563eb',
                     }]
                 },
                 options: {
@@ -729,518 +506,244 @@
                         x: {
                             type: 'time',
                             time: { unit: 'day' },
-                            title: { display: true, text: 'Fecha' }
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
                         },
                         y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Peso (kg)' }
+                            beginAtZero: false,
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
                         }
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                title: function(context) {
-                                    return new Date(context[0].label).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                                },
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y + ' kg';
-                                    }
-                                    return label;
-                                }
-                            }
+                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+                }
+            });
+
+            window.bodyFatChart = new Chart(bodyFatCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Grasa Corporal (%)',
+                        data: bodyFatData,
+                        borderColor: '#d97706', // amber-600
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#d97706',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'day' },
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: '#a0aec0' },
+                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
                         }
-                    }
+                    },
+                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
                 }
             });
         }
-        
-        // Updates the selector for evolutionary load chart
+
+        function renderComments() {
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = '';
+            if (appData.comments.length === 0) {
+                commentsList.innerHTML = '<p class="text-center text-gray-500 light:text-gray-400">No hay notas aún.</p>';
+            }
+            appData.comments.forEach(comment => {
+                const p = document.createElement('p');
+                p.textContent = comment;
+                p.className = 'p-4 bg-gray-700 light:bg-gray-200 rounded-xl text-gray-300 light:text-gray-900';
+                commentsList.appendChild(p);
+            });
+        }
+
         function updateExerciseChartSelector() {
             const selector = document.getElementById('exercise-chart-selector');
-            const messageContainer = document.getElementById('evolutionary-load-message');
-            const chartContainer = document.getElementById('evolutionary-load-chart');
             selector.innerHTML = '';
-            const exercises = new Set();
-            for (const exerciseName in appData.evolutionaryLoad) {
-                if (appData.evolutionaryLoad[exerciseName].length > 0) {
-                    exercises.add(exerciseName);
-                }
-            }
+            const allExercises = new Set();
+            Object.keys(appData.progress).forEach(exerciseName => allExercises.add(exerciseName));
             
-            if (exercises.size > 0) {
-                exercises.forEach(name => {
+            if (allExercises.size === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'No hay datos de progreso';
+                selector.appendChild(option);
+                selector.disabled = true;
+            } else {
+                selector.disabled = false;
+                allExercises.forEach(exerciseName => {
                     const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
+                    option.value = exerciseName;
+                    option.textContent = exerciseName;
                     selector.appendChild(option);
                 });
-                chartContainer.style.display = 'block';
-                messageContainer.style.display = 'none';
-                renderEvolutionaryLoadChart(selector.value);
-            } else {
-                selector.innerHTML = '<option value="">No hay ejercicios registrados</option>';
-                chartContainer.style.display = 'none';
-                messageContainer.style.display = 'block';
             }
-        }
-        
-        // Renders progress graphs (weight/IMC and measurements)
-        function renderProgressGraphs() {
-            const progressData = appData.progress.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const dates = progressData.map(p => p.date);
-            
-            // Destroy existing charts to avoid overlaps
-            if (weightImcChart) weightImcChart.destroy();
-            if (measurementsChart) measurementsChart.destroy();
-            
-            // Chart for Weight and IMC
-            const ctx1 = document.getElementById('weight-imc-chart').getContext('2d');
-            weightImcChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Peso (kg)',
-                            data: progressData.map(p => p.weight),
-                            borderColor: 'rgb(59, 130, 246)',
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            yAxisID: 'y',
-                        },
-                        {
-                            label: 'IMC',
-                            data: progressData.map(p => {
-                                const heightM = p.height / 100;
-                                return p.weight / (heightM * heightM);
-                            }),
-                            borderColor: 'rgb(102, 255, 102)',
-                            backgroundColor: 'rgba(102, 255, 102, 0.2)',
-                            yAxisID: 'y1',
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: { unit: 'day' },
-                            title: { display: true, text: 'Fecha' }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Peso (kg)' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'IMC' },
-                            grid: { drawOnChartArea: false }
-                        }
-                    }
-                }
-            });
-
-            // Chart for Measurements and Body Fat Percentage
-            const ctx2 = document.getElementById('measurements-chart').getContext('2d');
-            measurementsChart = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: '% Grasa Corporal',
-                            data: progressData.map(p => p.bodyFat),
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            yAxisID: 'y',
-                        },
-                        {
-                            label: 'Cuello (cm)',
-                            data: progressData.map(p => p.neck),
-                            borderColor: 'rgb(255, 159, 64)',
-                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                            yAxisID: 'y1',
-                        },
-                        {
-                            label: 'Cintura (cm)',
-                            data: progressData.map(p => p.waist),
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            yAxisID: 'y1',
-                        },
-                        {
-                            label: 'Cadera (cm)',
-                            data: progressData.map(p => p.hip),
-                            borderColor: 'rgb(153, 102, 255)',
-                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                            yAxisID: 'y1',
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: { unit: 'day' },
-                            title: { display: true, text: 'Fecha' }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: '% Grasa Corporal' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Medidas (cm)' },
-                            grid: { drawOnChartArea: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- Comments Section ---
-        function renderComments() {
-            const container = document.getElementById('comments-container');
-            container.innerHTML = '';
-            appData.comments.forEach((comment, index) => {
-                const commentElement = document.createElement('div');
-                commentElement.className = 'p-4 bg-gray-700 rounded-lg flex justify-between items-center';
-                commentElement.innerHTML = `
-                    <p class="text-white">${comment}</p>
-                    <button class="text-red-400 hover:text-red-300" onclick="deleteComment(${index})">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1H9a1 1 0 00-1 1v3m-2 4h12"/></svg>
-                    </button>
-                `;
-                container.appendChild(commentElement);
-            });
-        }
-        
-        // Deletes a comment
-        function deleteComment(index) {
-            showConfirmation('¿Estás seguro de que quieres eliminar esta nota?', () => {
-                appData.comments.splice(index, 1);
-                saveAppData();
-                renderComments();
-            });
-        }
-        
-        // --- UI & Event Handlers ---
-        
-        // Custom alert modal
-        function showCustomAlert(message) {
-            const modal = document.getElementById('custom-alert-modal');
-            document.getElementById('custom-alert-message').innerText = message;
-            modal.style.display = 'flex';
-        }
-
-        function closeCustomAlert() {
-            document.getElementById('custom-alert-modal').style.display = 'none';
-        }
-
-        // Custom confirmation modal
-        function showConfirmation(message, onConfirm) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[9999]';
-            modal.innerHTML = `
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-white max-w-sm w-full text-center">
-                    <p class="text-lg mb-4">${message}</p>
-                    <div class="flex justify-center space-x-4">
-                        <button id="cancel-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
-                            Cancelar
-                        </button>
-                        <button id="confirm-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-                            Confirmar
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            const confirmButton = modal.querySelector('#confirm-btn');
-            const cancelButton = modal.querySelector('#cancel-btn');
-
-            confirmButton.addEventListener('click', () => {
-                onConfirm();
-                modal.remove();
-            });
-
-            cancelButton.addEventListener('click', () => {
-                modal.remove();
-            });
-        }
-
-        // Handles collapsible sections
-        function setupCollapsibles() {
-            const toggles = document.querySelectorAll('.collapsible-toggle');
-            toggles.forEach(toggle => {
-                toggle.onclick = function() {
-                    const targetId = this.getAttribute('data-target');
-                    const targetContent = document.getElementById(targetId);
-                    const arrow = this.querySelector('.collapsible-arrow');
-                    
-                    if (targetContent.classList.contains('active')) {
-                        targetContent.classList.remove('active');
-                        arrow.classList.remove('rotate');
-                    } else {
-                        targetContent.classList.add('active');
-                        arrow.classList.add('rotate');
-                    }
-                };
-            });
-        }
-
-        // Opens the load modal
-        function openLoadModal(day, exerciseName) {
-            document.getElementById('load-day-input').value = day;
-            document.getElementById('load-exercise-name-input').value = exerciseName;
-            document.getElementById('load-modal').classList.remove('hidden');
-            document.getElementById('load-modal').classList.add('flex');
-        }
-
-        // Closes the load modal
-        function closeLoadModal() {
-            document.getElementById('load-modal').classList.add('hidden');
-            document.getElementById('load-modal').classList.remove('flex');
-            document.getElementById('load-form').reset();
-        }
-
-        // Redirects to a specific routine section and opens it
-        function goToRoutine(day) {
-            const routineElement = document.querySelector(`#routine-${day}-content`);
-            if (routineElement) {
-                routineElement.classList.add('active');
-                const toggle = routineElement.previousElementSibling.querySelector('.collapsible-arrow');
-                if (toggle) toggle.classList.add('rotate');
-                document.getElementById('rutinas').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-        
-        // Toggles light/dark mode
-        function toggleTheme() {
-            const body = document.body;
-            body.classList.toggle('light-mode');
-            const isLightMode = body.classList.contains('light-mode');
-            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
-            document.getElementById('moon-icon').classList.toggle('hidden', isLightMode);
-            document.getElementById('sun-icon').classList.toggle('hidden', !isLightMode);
-            
-            // Re-render charts to update colors
-            if (evolutionaryLoadChart) renderEvolutionaryLoadChart(document.getElementById('exercise-chart-selector').value);
-            if (weightImcChart || measurementsChart) renderProgressGraphs();
-        }
-
-        // Initial setup for theme
-        function setupTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-                document.getElementById('moon-icon').classList.add('hidden');
-                document.getElementById('sun-icon').classList.remove('hidden');
-            } else {
-                document.getElementById('moon-icon').classList.remove('hidden');
-                document.getElementById('sun-icon').classList.add('hidden');
-            }
-        }
-
-        // --- Update Modal Functions ---
-
-        // Shows the update modal with the latest changes
-        function showUpdateModal() {
-            const lastSeenVersion = localStorage.getItem('kalyxLastSeenVersion');
-
-            // Solo mostrar si la versión actual es diferente a la última vista
-            if (lastSeenVersion !== APP_VERSION) {
-                document.getElementById('update-version').textContent = updateNotes.version;
-                const contentContainer = document.getElementById('update-content');
-                contentContainer.innerHTML = ''; // Limpiar contenido previo
-
-                // Renderizar funcionalidades principales
-                if (updateNotes.features && updateNotes.features.length > 0) {
-                    contentContainer.innerHTML += '<h4 class="text-xl font-bold text-purple-300">Funcionalidades Principales:</h4>';
-                    const ul = document.createElement('ul');
-                    ul.className = 'list-disc list-inside space-y-1 ml-4';
-                    updateNotes.features.forEach(item => {
-                        const li = document.createElement('li');
-                        li.innerHTML = item;
-                        ul.appendChild(li);
-                    });
-                    contentContainer.appendChild(ul);
-                }
-
-                // Renderizar mejoras
-                if (updateNotes.improvements && updateNotes.improvements.length > 0) {
-                    contentContainer.innerHTML += '<h4 class="text-xl font-bold mt-4 text-blue-300">Nuevas Características:</h4>';
-                    const ul = document.createElement('ul');
-                    ul.className = 'list-disc list-inside space-y-1 ml-4';
-                    updateNotes.improvements.forEach(item => {
-                        const li = document.createElement('li');
-                        li.innerHTML = item;
-                        ul.appendChild(li);
-                    });
-                    contentContainer.appendChild(ul);
-                }
-
-                // Renderizar arreglos
-                if (updateNotes.fixes && updateNotes.fixes.length > 0) {
-                    contentContainer.innerHTML += '<h4 class="text-xl font-bold mt-4 text-green-300">Arreglos y Optimizaciones:</h4>';
-                    const ul = document.createElement('ul');
-                    ul.className = 'list-disc list-inside space-y-1 ml-4';
-                    updateNotes.fixes.forEach(item => {
-                        const li = document.createElement('li');
-                        li.innerHTML = item;
-                        ul.appendChild(li);
-                    });
-                    contentContainer.appendChild(ul);
-                }
-
-                document.getElementById('update-modal').classList.remove('hidden');
-                document.getElementById('update-modal').classList.add('flex');
-            }
-        }
-
-        // Closes the update modal and saves the current version to localStorage
-        function closeUpdateModal() {
-            localStorage.setItem('kalyxLastSeenVersion', APP_VERSION);
-            document.getElementById('update-modal').classList.add('hidden');
-            document.getElementById('update-modal').classList.remove('flex');
-        }
-
-        // --- Event Listeners ---
-        
-        // Timer controls
-        document.getElementById('timer-start-btn').addEventListener('click', startTimer);
-        document.getElementById('timer-pause-btn').addEventListener('click', pauseTimer);
-        document.getElementById('timer-reset-btn').addEventListener('click', resetTimer);
-
-        // Form to add/edit an exercise
-        document.getElementById('exercise-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const exerciseName = document.getElementById('exercise-name-input').value;
-            const sets = document.getElementById('exercise-sets-input').value;
-            const reps = document.getElementById('exercise-reps-input').value;
-            const videoUrl = document.getElementById('exercise-video-url-input').value;
-            const exerciseIndex = document.getElementById('exercise-index').value;
-
-            if (exerciseName.trim() === '') {
-                showCustomAlert('El nombre del ejercicio no puede estar vacío.');
-                return;
-            }
-
-            if (exerciseIndex === '') {
-                const newExercise = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
-                appData.routines[currentEditingDay].exercises.push(newExercise);
-            } else {
-                appData.routines[currentEditingDay].exercises[exerciseIndex] = { name: exerciseName, sets: sets, reps: reps, videoUrl: videoUrl };
-            }
-
-            saveAppData();
-            renderEditableExerciseList();
-            renderRoutines();
-            updateSummary();
-            clearExerciseForm();
-        });
-
-        // Form to register load
-        document.getElementById('load-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const day = document.getElementById('load-day-input').value;
-            const exerciseName = document.getElementById('load-exercise-name-input').value;
-            const weight = parseFloat(document.getElementById('load-weight-input').value);
-
-            if (isNaN(weight) || weight <= 0) {
-                showCustomAlert('Por favor, introduce un peso válido.');
-                return;
-            }
-
-            const loadData = { date: new Date().toISOString(), weight: weight };
-            if (!appData.evolutionaryLoad[exerciseName]) {
-                appData.evolutionaryLoad[exerciseName] = [];
-            }
-            appData.evolutionaryLoad[exerciseName].push(loadData);
-            saveAppData();
-            updateExerciseChartSelector();
-            renderEvolutionaryLoadChart(exerciseName);
-            closeLoadModal();
-        });
-        
-        document.getElementById('exercise-chart-selector').addEventListener('change', (e) => {
-            const selectedExercise = e.target.value;
-            renderEvolutionaryLoadChart(selectedExercise);
-        });
-
-        // Form to save progress
-        document.getElementById('progress-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const age = parseFloat(document.getElementById('age').value);
-            const gender = document.getElementById('gender').value;
-            const heightCm = parseFloat(document.getElementById('height').value);
-            const weightKg = parseFloat(document.getElementById('weight').value);
-            const bodyFat = parseFloat(document.getElementById('body-fat').value);
-            const neck = parseFloat(document.getElementById('neck').value);
-            const waist = parseFloat(document.getElementById('waist').value);
-            const hip = parseFloat(document.getElementById('hip').value);
-            const comment = document.getElementById('comment-progress').value;
-
-            if (isNaN(weightKg) || weightKg <= 0 || isNaN(heightCm) || heightCm <= 0 || isNaN(age) || age <= 0) {
-                showCustomAlert('Por favor, rellena los campos de Edad, Altura y Peso correctamente.');
-                return;
-            }
-
-            const newProgress = {
-                date: new Date().toISOString(),
-                age: age,
-                gender: gender,
-                height: heightCm,
-                weight: weightKg,
-                bodyFat: bodyFat,
-                neck: isNaN(neck) ? null : neck,
-                waist: isNaN(waist) ? null : waist,
-                hip: isNaN(hip) ? null : hip,
-                comment: comment
-            };
-
-            appData.progress.push(newProgress);
-            saveAppData();
             renderProgressGraphs();
-            document.getElementById('progress-form').reset();
-            document.getElementById('body-fat').value = '';
-        });
+        }
 
-        // Updates body fat percentage in real time
-        document.getElementById('progress-form').addEventListener('input', () => {
-            const age = parseFloat(document.getElementById('age').value);
-            const gender = document.getElementById('gender').value;
-            const heightCm = parseFloat(document.getElementById('height').value);
-            const weightKg = parseFloat(document.getElementById('weight').value);
+        // Lógica de la nueva sección de Racha
+        function calculateWeeklyProgress() {
+            let totalExercises = 0;
+            let completedExercises = 0;
 
-            if (heightCm > 0 && weightKg > 0 && age > 0) {
-                const genderValue = (gender === 'male') ? 1 : 0;
-                const heightM = heightCm / 100;
-                const imc = weightKg / (heightM * heightM);
-                const bodyFatPercentage = (1.20 * imc) + (0.23 * age) - (10.8 * genderValue) - 5.4;
-                document.getElementById('body-fat').value = bodyFatPercentage.toFixed(2);
+            appData.routines.forEach(dayRoutine => {
+                totalExercises += dayRoutine.length;
+                dayRoutine.forEach(exercise => {
+                    if (exercise.completed) {
+                        completedExercises++;
+                    }
+                });
+            });
+
+            return { total: totalExercises, completed: completedExercises };
+        }
+
+        function updateStreak() {
+            const progress = calculateWeeklyProgress();
+            const progressPercentage = getProgressPercentage(progress.total, progress.completed);
+            
+            const streakLevelEl = document.getElementById('streak-level');
+            const streakMessageEl = document.getElementById('streak-message');
+            const progressBarEl = document.getElementById('streak-progress-bar');
+            
+            progressBarEl.style.width = `${progressPercentage}%`;
+            
+            let level = '';
+            let message = '';
+            let bgColor = '';
+            
+            if (progressPercentage >= 85) {
+                level = 'Alto';
+                bgColor = 'bg-green-500';
+                message = '¡Impresionante! Tu dedicación ha dado sus frutos. ¡Sigue con este ritmo!';
+            } else if (progressPercentage >= 50) {
+                level = 'Medio';
+                bgColor = 'bg-yellow-500';
+                message = '¡Vas por un excelente camino! La constancia es la clave para alcanzar tus objetivos. ¡No te detengas!';
             } else {
-                document.getElementById('body-fat').value = '';
+                level = 'Bajo';
+                bgColor = 'bg-red-500';
+                message = '¡No te rindas! Lo que haces cada día importa más que lo que haces de vez en cuando. ¡Mañana es un nuevo comienzo!';
+            }
+            
+            streakLevelEl.textContent = level;
+            streakLevelEl.className = `px-3 py-1 rounded-full text-sm font-semibold text-white ${bgColor}`;
+            streakMessageEl.textContent = message;
+        }
+
+        function updateSummary() {
+            const totalVolumeEl = document.getElementById('total-volume');
+            const completedExercisesEl = document.getElementById('completed-exercises');
+            const totalTimeEl = document.getElementById('total-time');
+
+            let totalVolume = 0;
+            let totalCompleted = 0;
+            let totalTime = 0;
+
+            appData.routines.forEach(dayRoutine => {
+                dayRoutine.forEach(exercise => {
+                    if (exercise.completed) {
+                        totalCompleted++;
+                        const weightSum = exercise.weights.reduce((sum, weight) => sum + weight, 0);
+                        totalVolume += weightSum * exercise.reps;
+                        totalTime += exercise.sets * 5; // Asume 5 minutos por serie
+                    }
+                });
+            });
+
+            completedExercisesEl.textContent = totalCompleted;
+            totalVolumeEl.textContent = totalVolume.toFixed(2);
+            totalTimeEl.textContent = totalTime;
+            
+            updateStreak();
+        }
+
+        // Modal de actualización
+        function showUpdateModal() {
+            const modal = document.getElementById('update-modal');
+            const lastViewedVersion = localStorage.getItem('lastViewedVersion');
+            const currentVersion = 'V.A.4.2.';
+
+            if (lastViewedVersion !== currentVersion) {
+                modal.classList.remove('hidden');
+                localStorage.setItem('lastViewedVersion', currentVersion);
+            }
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // Selector de días
+        function setupDaySelector() {
+            const daysSelector = document.getElementById('days-selector');
+            daysSelector.innerHTML = '';
+            daysOfWeek.forEach((day, index) => {
+                const button = document.createElement('button');
+                button.id = `day-${index}`;
+                button.textContent = day.substring(0, 3);
+                button.className = `p-2 rounded-xl text-white font-semibold transition-colors duration-200`;
+                daysSelector.appendChild(button);
+            });
+        }
+        
+        // Temporizador
+        function startTimer() {
+            if (!timerRunning) {
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            const display = document.getElementById('timer-display');
+            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+
+        // Event Listeners
+        document.getElementById('days-selector').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('#days-selector button').forEach(btn => {
+                    btn.classList.remove('bg-blue-500');
+                });
+                e.target.classList.add('bg-blue-500');
+                currentDay = parseInt(e.target.id.split('-')[1]);
+                renderRoutines();
             }
         });
 
-        // Form to save comments
+        document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+            document.body.classList.toggle('light');
+        });
+
         document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const newComment = document.getElementById('new-comment-text').value.trim();
@@ -1252,21 +755,183 @@
             }
         });
         
-        // Theme toggle
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('routines-list').addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                const index = e.target.dataset.index;
+                const exercise = appData.routines[currentDay][index];
+                const isCompleted = e.target.checked;
+                
+                exercise.completed = isCompleted;
+                
+                // Lógica añadida para registrar el progreso de peso
+                const exerciseName = exercise.name;
+                const maxWeight = Math.max(...exercise.weights);
+                const today = new Date().toISOString().split('T')[0];
 
-        // Initial load
-        window.addEventListener('load', () => {
-            loadAppData();
-            updateSummary();
-            renderRoutines();
-            renderProgressGraphs();
-            renderComments();
-            updateExerciseChartSelector();
-            setupTheme();
-            showUpdateModal(); // Llama al modal de actualizaciones al cargar la página
+                if (isCompleted) {
+                    if (!appData.progress[exerciseName]) {
+                        appData.progress[exerciseName] = [];
+                    }
+                    // Evita duplicados para la misma fecha
+                    const existingEntryIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
+                    if (existingEntryIndex === -1) {
+                        appData.progress[exerciseName].push({ date: today, weight: maxWeight });
+                    }
+                } else {
+                    // Si se desmarca, elimina la entrada de hoy
+                    if (appData.progress[exerciseName]) {
+                        const todayIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
+                        if (todayIndex !== -1) {
+                            appData.progress[exerciseName].splice(todayIndex, 1);
+                        }
+                    }
+                }
+                
+                saveAppData();
+                updateSummary();
+                updateExerciseChartSelector(); // Asegura que el gráfico se actualice
+            }
         });
 
+        document.getElementById('exercise-chart-selector').addEventListener('change', () => {
+            renderProgressGraphs();
+        });
+
+        // Event Listener para el nuevo formulario de progreso corporal
+        document.getElementById('body-progress-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const date = document.getElementById('progress-date').value;
+            const weight = parseFloat(document.getElementById('progress-weight').value);
+            const height = parseFloat(document.getElementById('progress-height').value);
+            const age = parseInt(document.getElementById('progress-age').value);
+            const gender = document.getElementById('progress-gender').value;
+
+            if (date && !isNaN(weight) && !isNaN(height) && !isNaN(age) && gender !== "") {
+                const heightInMeters = height / 100;
+                const bmi = weight / (heightInMeters * heightInMeters);
+                const genderNumericValue = parseInt(gender);
+                const bodyFat = (1.2 * bmi) + (0.23 * age) - (10.8 * genderNumericValue) - 5.4;
+                
+                appData.bodyProgress.push({ 
+                    date: date, 
+                    weight: weight, 
+                    height: height,
+                    age: age,
+                    gender: genderNumericValue,
+                    bodyFat: bodyFat.toFixed(2)
+                });
+                
+                appData.bodyProgress.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                saveAppData();
+                renderBodyProgressCharts();
+                
+                document.getElementById('body-progress-form').reset();
+            } else {
+                console.error("Por favor, completa todos los campos correctamente.");
+            }
+        });
+
+        // Event Listeners para el CRUD de ejercicios
+        document.getElementById('add-exercise-btn').addEventListener('click', () => {
+            isEditMode = false;
+            exerciseToEditIndex = null;
+            document.getElementById('modal-title').textContent = 'Agregar Ejercicio';
+            document.getElementById('exercise-form').reset();
+            document.getElementById('exercise-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('edit-routine-btn').addEventListener('click', () => {
+            isEditMode = !isEditMode;
+            renderRoutines();
+            document.getElementById('edit-routine-btn').textContent = isEditMode ? 'Listo' : 'Editar';
+            if (isEditMode) {
+                document.getElementById('add-exercise-btn').classList.add('hidden');
+            } else {
+                document.getElementById('add-exercise-btn').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('routines-list').addEventListener('click', (e) => {
+            if (e.target.closest('.edit-exercise-btn')) {
+                const index = e.target.closest('.edit-exercise-btn').dataset.index;
+                isEditMode = true;
+                exerciseToEditIndex = parseInt(index);
+                const exercise = appData.routines[currentDay][exerciseToEditIndex];
+                
+                document.getElementById('modal-title').textContent = 'Editar Ejercicio';
+                document.getElementById('exercise-name').value = exercise.name;
+                document.getElementById('exercise-sets').value = exercise.sets;
+                document.getElementById('exercise-reps').value = exercise.reps;
+                document.getElementById('exercise-weights').value = exercise.weights.join(',');
+                document.getElementById('exercise-modal').classList.remove('hidden');
+            }
+            if (e.target.closest('.delete-exercise-btn')) {
+                // Se ha sustituido 'confirm' por un modal personalizado
+                exerciseToDeleteIndex = e.target.closest('.delete-exercise-btn').dataset.index;
+                document.getElementById('delete-confirm-modal').classList.remove('hidden');
+            }
+        });
+        
+        // Manejadores para el modal de borrado
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            if (exerciseToDeleteIndex !== null) {
+                appData.routines[currentDay].splice(parseInt(exerciseToDeleteIndex), 1);
+                saveAppData();
+                renderRoutines();
+                updateSummary();
+                document.getElementById('delete-confirm-modal').classList.add('hidden');
+                exerciseToDeleteIndex = null;
+            }
+        });
+
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+            exerciseToDeleteIndex = null;
+        });
+
+        document.getElementById('exercise-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('exercise-name').value;
+            const sets = parseInt(document.getElementById('exercise-sets').value);
+            const reps = parseInt(document.getElementById('exercise-reps').value);
+            const weights = document.getElementById('exercise-weights').value.split(',').map(w => parseFloat(w.trim()));
+
+            if (isEditMode) {
+                appData.routines[currentDay][exerciseToEditIndex] = { name, sets, reps, weights, completed: false };
+            } else {
+                appData.routines[currentDay].push({ name, sets, reps, weights, completed: false });
+            }
+
+            saveAppData();
+            renderRoutines();
+            document.getElementById('exercise-modal').classList.add('hidden');
+            updateExerciseChartSelector(); // Actualiza el selector de gráficos si es un nuevo ejercicio
+        });
+
+        document.getElementById('cancel-exercise-btn').addEventListener('click', () => {
+            document.getElementById('exercise-modal').classList.add('hidden');
+        });
+        
+        // Event Listeners para el temporizador
+        document.getElementById('start-timer-btn').addEventListener('click', startTimer);
+        document.getElementById('pause-timer-btn').addEventListener('click', pauseTimer);
+        document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+
+        // Evento al cargar la página
+        window.addEventListener('load', () => {
+            loadAppData();
+            setupDaySelector();
+            document.getElementById(`day-${currentDay}`).classList.add('bg-blue-500');
+            renderRoutines();
+            updateSummary();
+            renderComments();
+            updateExerciseChartSelector();
+            renderBodyProgressCharts();
+            showUpdateModal();
+        });
     </script>
 </body>
 </html>
