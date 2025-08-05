@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KALYX - App de Entrenamiento (Versión Alpha V.A.4.2.)</title>
+    <title>KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.2.)</title>
     <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,7 +69,6 @@
                     <li>Mejoras generales de la interfaz para una navegación más fluida.</li>
                     <li>**Se ha corregido un error** que impedía borrar ejercicios correctamente. Ahora se utiliza un modal de confirmación.</li>
                     <li>**Se ha implementado la funcionalidad de registro de progreso de peso** en los gráficos al marcar un ejercicio como completado.</li>
-                    <li>**Mejoras en la UX/UI con un nuevo tema claro y visual más dinamico</li>
                 </ul>
             </div>
             <button id="close-modal-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
@@ -137,11 +136,11 @@
         </header>
 
         <!-- Controles globales -->
-        <div class="flex justify-between items-center space-x-2 md:space-x-4">
-            <div id="days-selector" class="flex-grow flex justify-around space-x-1">
+        <div class="flex flex-col sm:flex-row items-center justify-between w-full space-y-4 sm:space-y-0">
+            <div id="days-selector" class="flex flex-wrap justify-center sm:justify-start gap-1 w-full sm:w-auto">
                 <!-- Los botones de los días se generarán aquí -->
             </div>
-            <button id="theme-toggle-btn" class="p-3 md:p-4 rounded-full bg-gray-700 light:bg-gray-200">
+            <button id="theme-toggle-btn" class="p-3 md:p-4 rounded-full bg-gray-700 light:bg-gray-200 flex-shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white light:text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
@@ -149,8 +148,9 @@
         </div>
 
         <!-- Main Content -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-8">
+        <main class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
+            <!-- Columna principal de contenido (izquierda en desktop, top en móvil) -->
+            <div class="lg:col-span-2 space-y-8 order-1">
                 <!-- Sección de Rutinas -->
                 <section class="card p-6 md:p-8">
                     <div class="flex justify-between items-center mb-4">
@@ -169,8 +169,44 @@
                     </ul>
                 </section>
                 
+                <!-- Resumen de la semana (aparece aquí en móvil) -->
+                <section class="card p-6 md:p-8 order-2 lg:hidden">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Resumen de la semana</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Ejercicios Completados:</span>
+                            <span id="completed-exercises" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Volumen Total (kg):</span>
+                            <span id="total-volume" class="font-bold text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
+                            <span id="total-time" class="font-bold text-lg">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Temporizador de descanso (aparece aquí en móvil) -->
+                <section class="card p-6 md:p-8 text-center order-3 lg:hidden">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
+                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">00:00</div>
+                    <div class="flex justify-center space-x-4">
+                        <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Iniciar
+                        </button>
+                        <button id="pause-timer-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Pausar
+                        </button>
+                        <button id="reset-timer-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Reiniciar
+                        </button>
+                    </div>
+                </section>
+
                 <!-- Sección de Racha Semanal -->
-                <section id="streak-section" class="card p-6 md:p-8">
+                <section id="streak-section" class="card p-6 md:p-8 order-4">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl md:text-2xl font-bold">Tu Racha Semanal</h2>
                         <span id="streak-level" class="px-3 py-1 rounded-full text-sm font-semibold text-white"></span>
@@ -182,7 +218,7 @@
                 </section>
                 
                 <!-- Sección de Gráficos de Progreso -->
-                <section class="card p-6 md:p-8">
+                <section class="card p-6 md:p-8 order-5">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso de Peso</h2>
                     <div class="mb-4 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
                         <label for="exercise-chart-selector" class="text-sm font-semibold text-gray-400 light:text-gray-600">Selecciona un ejercicio:</label>
@@ -194,7 +230,7 @@
                 </section>
 
                 <!-- Nueva Sección de Progreso Corporal Semanal -->
-                <section class="card p-6 md:p-8">
+                <section class="card p-6 md:p-8 order-6">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso Corporal Semanal</h2>
                     <form id="body-progress-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -239,10 +275,24 @@
                     </div>
                 </section>
 
+                <!-- Formulario de comentarios (aparece aquí en móvil) -->
+                <section class="card p-6 md:p-8 order-7 lg:hidden">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Comentarios y Notas</h2>
+                    <div id="comments-list" class="space-y-4 mb-4 text-sm max-h-64 overflow-y-auto">
+                        <!-- Los comentarios se generarán aquí -->
+                    </div>
+                    <form id="comment-form" class="space-y-4">
+                        <textarea id="new-comment-text" rows="3" placeholder="Agrega una nota..." class="w-full bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                            Agregar Nota
+                        </button>
+                    </form>
+                </section>
             </div>
             
-            <div class="lg:col-span-1 space-y-8">
-                <!-- Resumen de la semana -->
+            <!-- Columna lateral para desktop (oculta en móvil) -->
+            <div class="hidden lg:block lg:col-span-1 space-y-8 order-last">
+                <!-- Resumen de la semana (desktop) -->
                 <section class="card p-6 md:p-8">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Resumen de la semana</h2>
                     <div class="space-y-4">
@@ -261,7 +311,7 @@
                     </div>
                 </section>
 
-                <!-- Temporizador de descanso -->
+                <!-- Temporizador de descanso (desktop) -->
                 <section class="card p-6 md:p-8 text-center">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
                     <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">00:00</div>
@@ -278,7 +328,7 @@
                     </div>
                 </section>
 
-                <!-- Formulario de comentarios -->
+                <!-- Formulario de comentarios (desktop) -->
                 <section class="card p-6 md:p-8">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Comentarios y Notas</h2>
                     <div id="comments-list" class="space-y-4 mb-4 text-sm max-h-64 overflow-y-auto">
@@ -349,6 +399,15 @@
                 appData.comments = [];
                 appData.weekStart = weekStartDate;
                 appData.bodyProgress = [];
+            }
+            // Cargar el tema guardado
+            const savedTheme = localStorage.getItem('kalyxTheme');
+            if (savedTheme) {
+                document.body.classList.add(savedTheme);
+            } else {
+                // Tema por defecto si no hay ninguno guardado
+                document.body.classList.add('light'); 
+                localStorage.setItem('kalyxTheme', 'light'); // Guarda el tema por defecto
             }
             saveAppData();
         }
@@ -741,7 +800,15 @@
         });
 
         document.getElementById('theme-toggle-btn').addEventListener('click', () => {
-            document.body.classList.toggle('light');
+            const isLight = document.body.classList.contains('light');
+            document.body.classList.remove('light', 'dark'); // Eliminar ambas clases para asegurar que solo una se aplique
+            if (isLight) {
+                document.body.classList.add('dark');
+                localStorage.setItem('kalyxTheme', 'dark');
+            } else {
+                document.body.classList.add('light');
+                localStorage.setItem('kalyxTheme', 'light');
+            }
         });
 
         document.getElementById('comment-form').addEventListener('submit', (e) => {
@@ -922,7 +989,7 @@
 
         // Evento al cargar la página
         window.addEventListener('load', () => {
-            loadAppData();
+            loadAppData(); // Carga los datos de la app y el tema
             setupDaySelector();
             document.getElementById(`day-${currentDay}`).classList.add('bg-blue-500');
             renderRoutines();
