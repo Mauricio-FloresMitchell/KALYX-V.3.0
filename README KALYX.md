@@ -1,106 +1,43 @@
-💪 KALYX – App Web de Entrenamiento Personalizado (Versión de Prueba V.A.3.5)
-KALYX es una app web responsive enfocada en ofrecer una experiencia personalizada de entrenamiento, seguimiento de progreso físico y control de rutinas. Está pensada para usuarios que desean gestionar su entrenamiento de forma práctica, visual y autónoma desde cualquier dispositivo.
+KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.2.)
+KALYX es una aplicación web de entrenamiento diseñada para ayudarte a seguir y registrar tu progreso en el gimnasio. Esta versión de prueba, V.A.4.2., incluye funciones clave para gestionar rutinas, monitorear el progreso físico y mantener un registro de tus notas.
 
-🚧 Estado del Proyecto
-Esta es una versión de prueba ALPHA V.A.3.5 de KALYX, desarrollada como prototipo funcional. Todos los datos se almacenan únicamente en el navegador local del usuario mediante localStorage.
+Características Principales
+Rutinas Diarias Personalizables: Crea, edita y elimina ejercicios para cada día de la semana.
 
-No se requiere registro ni conexión a base de datos externa.
+Seguimiento de Progreso de Peso: Al marcar un ejercicio como completado, el peso máximo que utilizaste se registra automáticamente para que puedas visualizar tu progreso a lo largo del tiempo en un gráfico interactivo.
 
-🎯 Novedades en V.A.3.5
-Modal de Novedades al Iniciar: Ahora, al cargar la aplicación por primera vez con una nueva versión, se mostrará automáticamente un modal con las novedades, mejoras y arreglos implementados.
+Registro de Progreso Corporal: Introduce tu peso, altura, edad y género para calcular tu IMC y estimar tu porcentaje de grasa corporal, y visualiza el historial de estos datos en gráficos dedicados.
 
-Corrección de Usabilidad en Modales: Se ha solucionado un problema por el cual los modales (como el de alerta y el de novedades) podían tapar toda la pantalla en algunos dispositivos, impidiendo que el usuario pudiera cerrarlos. Ahora los controles están siempre visibles y se adaptan mejor a la pantalla.
+Racha Semanal: Un medidor de progreso que te muestra el porcentaje de ejercicios completados en la semana, motivándote a mantener la constancia.
 
-🎯 Funcionalidades Principales
-📅 Plan Semanal
-Visualiza y accede a la rutina del día.
+Temporizador de Descanso: Un temporizador integrado para gestionar los descansos entre sets.
 
-Consulta el progreso semanal de forma porcentual.
+Notas y Comentarios: Un espacio para añadir notas o comentarios relevantes sobre tu rutina o estado de ánimo.
 
-Accede al total de ejercicios registrados.
+Modo Claro/Oscuro: Cambia entre un tema claro y oscuro para una experiencia de usuario óptima en cualquier entorno.
 
-🏋️ Detalle de Rutinas
-Rutinas organizadas por día de la semana.
+Multi-plataforma: La interfaz es completamente adaptable y funciona en dispositivos móviles, tablets y ordenadores.
 
-Edición dinámica de ejercicios: nombre, series, repeticiones y video de YouTube.
+Tecnología
+HTML5: Estructura de la aplicación.
 
-Posibilidad de añadir carga (peso) por ejercicio y ver su historial.
+Tailwind CSS: Framework de CSS para un diseño moderno y responsivo.
 
-Modal editor intuitivo con campos validados.
+JavaScript (ES6+): Lógica principal de la aplicación, manejo de eventos y gestión de datos.
 
-📈 Carga Evolutiva
-Gráfica de progresión de carga por ejercicio.
+Chart.js: Biblioteca de gráficos para la visualización del progreso de peso y el historial de peso corporal.
 
-Selección de ejercicio desde lista desplegable.
+Uso
+La aplicación guarda tus datos localmente en tu navegador, lo que significa que tu información no se pierde al recargar la página. Simplemente abre el archivo index.html en tu navegador web.
 
-Visualización temporal con Chart.js y fechas adaptadas.
+Utiliza los botones de los días para cambiar la rutina semanal.
 
-⏱️ Temporizador de Descanso
-Temporizador global para intervalos entre series.
+Haz clic en "Agregar" para crear un nuevo ejercicio o en "Editar" para modificar o eliminar uno existente.
 
-Controles de pausa y reinicio.
+Usa el temporizador para tus descansos.
 
-Visual optimizado para pantallas móviles y escritorio.
+Marcar los ejercicios como completados para actualizar tus gráficos de progreso.
 
-Notificación de 5 segundos antes de terminar el descanso.
+Agrega tus datos de progreso corporal en la sección correspondiente para un seguimiento más detallado.
 
-📊 Progreso Corporal Semanal
-Registro de peso, altura, cuello, cintura y caderas.
-
-Cálculo automático de IMC y % de grasa corporal.
-
-Gráficas comparativas de:
-
-Peso e IMC
-
-Medidas corporales (cuello, cintura, cadera, % de grasa)
-
-Actualización semanal con registros visuales.
-
-📝 Diario de Entrenamiento
-Registro libre de comentarios diarios.
-
-Edición y eliminación de entradas anteriores.
-
-Visualización cronológica inversa.
-
-🌗 Interfaz Visual
-Modo Oscuro y Claro (con botón de cambio de tema).
-
-Diseño responsivo con TailwindCSS.
-
-Componentes visuales accesibles y estilizados (tarjetas, botones, formularios, íconos).
-
-🔐 Privacidad y Almacenamiento
-Todos los datos se guardan únicamente en tu navegador (no en servidores externos).
-
-Al borrar caché/localStorage del navegador, los datos también se eliminarán.
-
-Ideal para uso personal, pruebas, aprendizaje o como base para escalar a backend real.
-
-🧪 Participa con tu Opinión
-Al final de la app encontrarás un botón que te permitirá responder una encuesta para evaluar la experiencia y ayudarnos a mejorar.
-
-⚙️ Tecnologías Utilizadas
-HTML5
-
-CSS3 + TailwindCSS
-
-JavaScript Vanilla
-
-Chart.js + adaptador date-fns
-
-localStorage API para persistencia de datos offline
-
-📁 Cómo usar o probar localmente
-Descarga o clona este repositorio.
-
-Abre el archivo index.html con un navegador (Chrome recomendado).
-
-Todos los datos quedarán guardados en ese navegador y dispositivo.
-
-📝 Licencia y Uso
-Este proyecto puede utilizarse libremente con fines educativos, personales o como base para otros desarrollos.
-
-💡 ¿Ideas o feedback?
-Abrimos el espacio para sugerencias, mejoras o propuestas de colaboración. ¡Gracias por usar KALYX!
+¡Esperamos que disfrutes usando KALYX para alcanzar tus objetivos de fitness!
