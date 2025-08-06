@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.2.)</title>
+    <title>KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.3.)</title>
     <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
         }
 
         body.light {
-            background-color: #f3f4f6; /* gray-100 */
+            background-color: #f3f4f6; /* gray-100, un gris claro como solicitado */
             color: #1a202c; /* gray-900 */
         }
 
@@ -55,20 +55,19 @@
         }
     </style>
 </head>
-<body class="light">
+<body class="dark"> <!-- Establecido a 'dark' por defecto en el HTML -->
     <!-- Modal de Actualización -->
     <div id="update-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
         <div class="card w-full md:w-1/2 p-6 md:p-8">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Notas de la Versión Alpha V.A.4.2.</h3>
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Notas de la Versión Alpha V.A.4.3.</h3>
             <div class="space-y-3 text-sm md:text-base">
-                <p>¡Hola! Se han implementado mejoras significativas en la experiencia de usuario y nuevas funciones:</p>
+                <p>¡Hola! Estas son las mejoras de la versión V.A.4.3.:</p>
                 <ul class="list-disc list-inside space-y-2">
-                    <li>Se agregó la funcionalidad de **marcar ejercicios como completados** para llevar un mejor seguimiento de tu progreso diario.</li>
-                    <li>Ahora puedes ver tu **progreso semanal en porcentaje**, dándote una visión clara de tu consistencia.</li>
-                    <li>Nueva sección de **"Racha" semanal** que evalúa tu nivel de compromiso.</li>
-                    <li>Mejoras generales de la interfaz para una navegación más fluida.</li>
-                    <li>**Se ha corregido un error** que impedía borrar ejercicios correctamente. Ahora se utiliza un modal de confirmación.</li>
-                    <li>**Se ha implementado la funcionalidad de registro de progreso de peso** en los gráficos al marcar un ejercicio como completado.</li>
+                    <li>**Seguimiento de Ejercicios:** Ahora puedes marcar ejercicios como completados.</li>
+                    <li>**Progreso Semanal:** Visualiza tu porcentaje de progreso semanal y tu racha de compromiso.</li>
+                    <li>**Gráficos de Progreso:** Registro automático del peso máximo al completar ejercicios.</li>
+                    <li>**Contadores Mejorados:** La lógica de los contadores del resumen semanal ha sido optimizada.</li>
+                    <li>**Corrección de Errores:** Solucionado el problema al borrar ejercicios con un modal de confirmación.</li>
                 </ul>
             </div>
             <button id="close-modal-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
@@ -125,13 +124,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal de Alerta del Temporizador -->
+    <div id="timer-alert-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="card w-full md:w-1/3 p-6 md:p-8 text-center">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">¡Tiempo casi terminado!</h3>
+            <p class="text-gray-400 light:text-gray-600 mb-6">Quedan menos de 10 segundos para tu descanso.</p>
+            <button id="close-timer-alert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                Entendido
+            </button>
+        </div>
+    </div>
     
     <div class="container mx-auto p-4 md:p-8 space-y-8">
         <!-- Encabezado -->
         <header class="header-bg bg-cover bg-center rounded-3xl p-6 md:p-8 text-white">
             <div class="backdrop-blur-sm bg-gray-900 bg-opacity-50 rounded-2xl p-4 md:p-6 text-center">
                 <h1 class="text-2xl md:text-5xl font-black mb-2">KALYX</h1>
-                <p class="text-sm md:text-lg font-light mb-4">App de Entrenamiento PRO (Versión Alpha V.A.4.2.)</p>
+                <p class="text-sm md:text-lg font-light mb-4">App de Entrenamiento PRO (Versión Alpha V.A.4.3.)</p>
+                <!-- El ID de usuario ya no es necesario para el almacenamiento local -->
             </div>
         </header>
 
@@ -178,8 +189,8 @@
                             <span id="completed-exercises" class="font-bold text-lg">0</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Volumen Total (kg):</span>
-                            <span id="total-volume" class="font-bold text-lg">0</span>
+                            <span class="text-gray-400 light:text-gray-600">Días de entrenamiento completados:</span>
+                            <span id="completed-training-days" class="font-bold text-lg">0</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
@@ -191,7 +202,7 @@
                 <!-- Temporizador de descanso (aparece aquí en móvil) -->
                 <section class="card p-6 md:p-8 text-center order-3 lg:hidden">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
-                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">00:00</div>
+                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">03:00</div> <!-- Valor inicial del temporizador -->
                     <div class="flex justify-center space-x-4">
                         <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
                             Iniciar
@@ -301,8 +312,8 @@
                             <span id="completed-exercises" class="font-bold text-lg">0</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Volumen Total (kg):</span>
-                            <span id="total-volume" class="font-bold text-lg">0</span>
+                            <span class="text-gray-400 light:text-gray-600">Días de entrenamiento completados:</span>
+                            <span id="completed-training-days" class="font-bold text-lg">0</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
@@ -314,7 +325,7 @@
                 <!-- Temporizador de descanso (desktop) -->
                 <section class="card p-6 md:p-8 text-center">
                     <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
-                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">00:00</div>
+                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">03:00</div> <!-- Valor inicial del temporizador -->
                     <div class="flex justify-center space-x-4">
                         <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
                             Iniciar
@@ -351,7 +362,7 @@
         </footer>
     </div>
     
-    <script>
+    <script type="module">
         // Declaración de variables globales
         const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         
@@ -371,8 +382,9 @@
         let exerciseToDeleteIndex = null; // Variable para almacenar el índice del ejercicio a borrar
         
         let timerRunning = false;
-        let timerSeconds = 0;
+        let timerSeconds = 180; // 3 minutos (3 * 60 segundos)
         let timerInterval = null;
+        let timerAlertShown = false; // Bandera para controlar si la alerta ya se mostró
 
         // Funciones de utilidad
         function getWeekStartDate() {
@@ -386,34 +398,51 @@
             return total > 0 ? Math.round((completed / total) * 100) : 0;
         }
 
-        // Carga y guarda datos
+        // Carga y guarda datos (AHORA CON LOCALSTORAGE)
         function loadAppData() {
+            console.log("Intentando cargar datos de la aplicación desde localStorage...");
             const savedData = JSON.parse(localStorage.getItem('kalyxAppData'));
             const weekStartDate = getWeekStartDate().toISOString().split('T')[0];
 
-            if (savedData && savedData.weekStart === weekStartDate) {
-                appData = savedData;
+            if (savedData) {
+                // Si la semana no ha cambiado, carga los datos guardados
+                if (savedData.weekStart === weekStartDate) {
+                    appData = savedData;
+                    console.log("Datos de la aplicación cargados desde localStorage para la semana actual.");
+                } else {
+                    // Si la semana ha cambiado, reinicia los datos de rutina y progreso semanal
+                    console.log("La semana ha cambiado o no hay datos para la semana actual, reiniciando los datos de rutina.");
+                    appData.routines = daysOfWeek.map(() => []);
+                    appData.progress = {};
+                    // Los comentarios y el progreso corporal se mantienen, ya que son acumulativos
+                    appData.comments = savedData.comments || []; 
+                    appData.bodyProgress = savedData.bodyProgress || [];
+                    appData.weekStart = weekStartDate;
+                }
             } else {
+                // Si no existe el documento, inicializa con datos por defecto
+                console.log("No se encontraron datos de la aplicación en localStorage. Iniciando desde cero.");
                 appData.routines = daysOfWeek.map(() => []);
                 appData.progress = {};
                 appData.comments = [];
                 appData.weekStart = weekStartDate;
                 appData.bodyProgress = [];
             }
-            // Cargar el tema guardado
+
+            // Cargar el tema guardado (sigue usando localStorage para el tema)
             const savedTheme = localStorage.getItem('kalyxTheme');
             if (savedTheme) {
                 document.body.classList.add(savedTheme);
             } else {
-                // Tema por defecto si no hay ninguno guardado
-                document.body.classList.add('light'); 
-                localStorage.setItem('kalyxTheme', 'light'); // Guarda el tema por defecto
+                document.body.classList.add('dark'); 
+                localStorage.setItem('kalyxTheme', 'dark');
             }
-            saveAppData();
+            saveAppData(); // Guarda los datos iniciales o actualizados en localStorage
         }
 
         function saveAppData() {
             localStorage.setItem('kalyxAppData', JSON.stringify(appData));
+            console.log("Datos guardados en localStorage.");
         }
 
         // Renderizado de la UI
@@ -703,27 +732,39 @@
         }
 
         function updateSummary() {
-            const totalVolumeEl = document.getElementById('total-volume');
             const completedExercisesEl = document.getElementById('completed-exercises');
+            const completedTrainingDaysEl = document.getElementById('completed-training-days'); // Nuevo elemento
             const totalTimeEl = document.getElementById('total-time');
 
-            let totalVolume = 0;
-            let totalCompleted = 0;
+            let totalCompletedExercises = 0;
+            let completedTrainingDays = 0; // Contador para días de entrenamiento completados
             let totalTime = 0;
 
-            appData.routines.forEach(dayRoutine => {
+            appData.routines.forEach((dayRoutine, dayIndex) => { // Añadido dayIndex
+                let allExercisesCompletedForDay = true;
+                let hasExercises = dayRoutine.length > 0;
+                // let exercisesCompletedToday = 0; // No se usa directamente para el resumen, pero útil para depurar
+
                 dayRoutine.forEach(exercise => {
                     if (exercise.completed) {
-                        totalCompleted++;
-                        const weightSum = exercise.weights.reduce((sum, weight) => sum + weight, 0);
-                        totalVolume += weightSum * exercise.reps;
+                        // exercisesCompletedToday++; // No se usa directamente para el resumen
+                        totalCompletedExercises++;
                         totalTime += exercise.sets * 5; // Asume 5 minutos por serie
+                    } else {
+                        allExercisesCompletedForDay = false;
                     }
                 });
+
+                // Un día se considera "completado" si:
+                // 1. Tenía ejercicios Y todos ellos fueron completados.
+                // 2. NO tenía ejercicios (es un día de descanso designado).
+                if ((hasExercises && allExercisesCompletedForDay) || (!hasExercises)) {
+                    completedTrainingDays++;
+                }
             });
 
-            completedExercisesEl.textContent = totalCompleted;
-            totalVolumeEl.textContent = totalVolume.toFixed(2);
+            completedExercisesEl.textContent = totalCompletedExercises;
+            completedTrainingDaysEl.textContent = completedTrainingDays; // Actualiza el nuevo elemento
             totalTimeEl.textContent = totalTime;
             
             updateStreak();
@@ -733,7 +774,7 @@
         function showUpdateModal() {
             const modal = document.getElementById('update-modal');
             const lastViewedVersion = localStorage.getItem('lastViewedVersion');
-            const currentVersion = 'V.A.4.2.';
+            const currentVersion = 'V.A.4.3.'; // Actualizado a V.A.4.3.
 
             if (lastViewedVersion !== currentVersion) {
                 modal.classList.remove('hidden');
@@ -761,9 +802,18 @@
         function startTimer() {
             if (!timerRunning) {
                 timerRunning = true;
+                timerAlertShown = false; // Reinicia la bandera de alerta al iniciar el temporizador
                 timerInterval = setInterval(() => {
-                    timerSeconds++;
+                    timerSeconds--;
                     updateTimerDisplay();
+                    if (timerSeconds <= 10 && timerSeconds > 0 && !timerAlertShown) {
+                        showTimerAlert();
+                        timerAlertShown = true;
+                    }
+                    if (timerSeconds <= 0) {
+                        resetTimer();
+                        hideTimerAlert(); // Asegura que la alerta se oculte al llegar a 0
+                    }
                 }, 1000);
             }
         }
@@ -775,8 +825,10 @@
 
         function resetTimer() {
             pauseTimer();
-            timerSeconds = 0;
+            timerSeconds = 180; // 3 minutos
             updateTimerDisplay();
+            hideTimerAlert(); // Oculta la alerta al reiniciar
+            timerAlertShown = false; // Reinicia la bandera de alerta
         }
 
         function updateTimerDisplay() {
@@ -784,6 +836,16 @@
             const seconds = timerSeconds % 60;
             const display = document.getElementById('timer-display');
             display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function showTimerAlert() {
+            const timerAlertModal = document.getElementById('timer-alert-modal');
+            timerAlertModal.classList.remove('hidden');
+        }
+
+        function hideTimerAlert() {
+            const timerAlertModal = document.getElementById('timer-alert-modal');
+            timerAlertModal.classList.add('hidden');
         }
 
 
@@ -832,7 +894,7 @@
                 
                 // Lógica añadida para registrar el progreso de peso
                 const exerciseName = exercise.name;
-                const maxWeight = Math.max(...exercise.weights);
+                const maxWeight = Math.Max(...exercise.weights);
                 const today = new Date().toISOString().split('T')[0];
 
                 if (isCompleted) {
@@ -854,7 +916,7 @@
                     }
                 }
                 
-                saveAppData();
+                saveAppData(); // Guardar en localStorage
                 updateSummary();
                 updateExerciseChartSelector(); // Asegura que el gráfico se actualice
             }
@@ -891,7 +953,7 @@
                 
                 appData.bodyProgress.sort((a, b) => new Date(a.date) - new Date(b.date));
                 
-                saveAppData();
+                saveAppData(); // Guardar en localStorage
                 renderBodyProgressCharts();
                 
                 document.getElementById('body-progress-form').reset();
@@ -945,7 +1007,7 @@
         document.getElementById('confirm-delete-btn').addEventListener('click', () => {
             if (exerciseToDeleteIndex !== null) {
                 appData.routines[currentDay].splice(parseInt(exerciseToDeleteIndex), 1);
-                saveAppData();
+                saveAppData(); // Guardar en localStorage
                 renderRoutines();
                 updateSummary();
                 document.getElementById('delete-confirm-modal').classList.add('hidden');
@@ -972,7 +1034,7 @@
                 appData.routines[currentDay].push({ name, sets, reps, weights, completed: false });
             }
 
-            saveAppData();
+            saveAppData(); // Guardar en localStorage
             renderRoutines();
             document.getElementById('exercise-modal').classList.add('hidden');
             updateExerciseChartSelector(); // Actualiza el selector de gráficos si es un nuevo ejercicio
@@ -986,6 +1048,7 @@
         document.getElementById('start-timer-btn').addEventListener('click', startTimer);
         document.getElementById('pause-timer-btn').addEventListener('click', pauseTimer);
         document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
+        document.getElementById('close-timer-alert-btn').addEventListener('click', hideTimerAlert); // Nuevo listener para cerrar la alerta
 
         // Evento al cargar la página
         window.addEventListener('load', () => {
@@ -998,6 +1061,7 @@
             updateExerciseChartSelector();
             renderBodyProgressCharts();
             showUpdateModal();
+            updateTimerDisplay(); // Asegura que el temporizador muestre el valor inicial correcto
         });
     </script>
 </body>
