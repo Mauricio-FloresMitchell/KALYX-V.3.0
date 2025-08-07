@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.3.)</title>
+    <title>KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.5.)</title>
     <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,8 @@
     <!-- Bibliotecas para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- Incluir la librería de Phosphor Icons (para los iconos) -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -21,406 +23,348 @@
         }
 
         body.light {
-            background-color: #f3f4f6; /* gray-100, un gris claro como solicitado */
-            color: #1a202c; /* gray-900 */
+            background-color: #f3f4f6; /* gray-100 */
+            color: #1f2937; /* gray-800 */
+        }
+        
+        .toggle-switch {
+            width: 40px;
+            height: 20px;
+            background-color: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-switch.toggled {
+            transform: translateX(0);
+        }
+        
+        .toggle-switch .toggle-ball {
+            width: 16px;
+            height: 16px;
+            border-radius: 9999px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
         }
 
-        .card {
-            background-color: #2d3748; /* gray-800 */
-            border-radius: 1.5rem; /* rounded-3xl */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-px rgba(0, 0, 0, 0.06);
+        .toggle-switch.toggled .toggle-ball {
+            transform: translateX(20px);
         }
 
-        .light .card {
-            background-color: #ffffff; /* white */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        /* Estilos para el temporizador */
+        #timer-alert.hidden {
+            display: none;
         }
 
-        .header-bg {
-            background-image: url('https://placehold.co/1200x400/2d3748/ffffff?text=KALYX+PRO');
-            background-size: cover;
-            background-position: center;
-        }
-        .light .header-bg {
-            background-image: url('https://placehold.co/1200x400/ffffff/2d3748?text=KALYX+PRO');
+        .timer-glow {
+            animation: glow 1.5s infinite alternate;
         }
 
-        #routines-list li {
-            background-color: #4a5568;
-            border-radius: 0.75rem;
-        }
-
-        .light #routines-list li {
-            background-color: #e2e8f0;
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #f1f5f9;
+            }
+            to {
+                text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+            }
         }
     </style>
 </head>
-<body class="dark"> <!-- Establecido a 'dark' por defecto en el HTML -->
-    <!-- Modal de Actualización -->
-    <div id="update-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div class="card w-full md:w-1/2 p-6 md:p-8">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Notas de la Versión Alpha V.A.4.3.</h3>
-            <div class="space-y-3 text-sm md:text-base">
-                <p>¡Hola! Estas son las mejoras de la versión V.A.4.3.:</p>
-                <ul class="list-disc list-inside space-y-2">
-                    <li>**Seguimiento de Ejercicios:** Ahora puedes marcar ejercicios como completados.</li>
-                    <li>**Progreso Semanal:** Visualiza tu porcentaje de progreso semanal y tu racha de compromiso.</li>
-                    <li>**Gráficos de Progreso:** Registro automático del peso máximo al completar ejercicios.</li>
-                    <li>**Contadores Mejorados:** La lógica de los contadores del resumen semanal ha sido optimizada.</li>
-                    <li>**Corrección de Errores:** Solucionado el problema al borrar ejercicios con un modal de confirmación.</li>
-                </ul>
+<body class="dark transition-colors duration-300">
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Encabezado y Selector de Tema -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-500 mb-4 md:mb-0">KALYX</h1>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="text-xl p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200">
+                    <i id="theme-icon" class="ph-bold ph-sun"></i>
+                </button>
             </div>
-            <button id="close-modal-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                Entendido
-            </button>
+        </header>
+
+        <!-- Selector de Día -->
+        <div class="flex flex-wrap justify-center mb-6 space-x-2 md:space-x-4">
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="0">Lun</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="1">Mar</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="2">Mié</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="3">Jue</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="4">Vie</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="5">Sáb</button>
+            <button class="day-selector-btn px-4 py-2 rounded-xl font-bold transition-all duration-200 hover:bg-blue-600" data-day="6">Dom</button>
         </div>
+
+        <!-- Alerta de Temporizador -->
+        <div id="timer-alert" class="hidden fixed bottom-4 right-4 bg-gray-800 text-white p-4 rounded-xl shadow-lg z-50">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold">Temporizador Terminado</h3>
+                <button id="close-timer-alert-btn" class="text-xl font-bold">&times;</button>
+            </div>
+            <p class="mt-2">¡Tu tiempo ha terminado! ¡Descansa!</p>
+        </div>
+
+        <!-- Secciones de la Aplicación -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Rutinas de Ejercicio -->
+            <section class="bg-gray-800 p-6 rounded-3xl shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Rutinas</h2>
+                    <button id="add-exercise-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200">
+                        Añadir Ejercicio
+                    </button>
+                </div>
+                <div id="routines-list" class="space-y-4">
+                    <!-- Los ejercicios se renderizarán aquí -->
+                </div>
+            </section>
+
+            <!-- Resumen Semanal y Temporizador -->
+            <section class="bg-gray-800 p-6 rounded-3xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">Resumen Semanal</h2>
+                <div id="summary" class="mb-6 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span>Días Entrenados:</span>
+                        <span id="trained-days" class="font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Ejercicios Completados:</span>
+                        <span id="completed-exercises" class="font-bold">0</span>
+                    </div>
+                </div>
+
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-bold mb-2">Temporizador de Descanso</h3>
+                    <div id="timer-display" class="text-5xl font-mono mb-4 timer-glow">00:00</div>
+                    <div class="flex justify-center space-x-4">
+                        <button id="start-timer-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                            Iniciar
+                        </button>
+                        <button id="pause-timer-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                            Pausar
+                        </button>
+                        <button id="reset-timer-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                            Reiniciar
+                        </button>
+                    </div>
+                    <div class="mt-4 flex justify-center space-x-2">
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full" data-time="30">30s</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full" data-time="60">1m</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full" data-time="90">1.5m</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full" data-time="120">2m</button>
+                        <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full" data-time="180">3m</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Comentarios del día -->
+        <section class="bg-gray-800 p-6 rounded-3xl shadow-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4">Comentarios del Día</h2>
+            <div id="comments-list" class="space-y-2 mb-4">
+                <!-- Los comentarios se renderizarán aquí -->
+            </div>
+            <div class="flex space-x-2">
+                <input type="text" id="comment-input" placeholder="Añadir comentario..." class="flex-grow p-2 rounded-xl bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="add-comment-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200">
+                    Añadir
+                </button>
+            </div>
+        </section>
+
+        <!-- Gráficos de Progreso -->
+        <section class="bg-gray-800 p-6 rounded-3xl shadow-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4">Progreso Corporal Semanal</h2>
+            
+            <!-- Formulario para actualizar progreso corporal -->
+            <div class="mt-6 p-4 bg-gray-700 rounded-2xl">
+                <h4 class="text-lg font-bold mb-4">Registrar Progreso Corporal del Día</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label for="progress-date" class="block text-sm font-medium mb-1">Fecha:</label>
+                        <input type="date" id="progress-date" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500">
+                    </div>
+                    <div>
+                        <label for="body-weight" class="block text-sm font-medium mb-1">Peso (kg):</label>
+                        <input type="number" id="body-weight" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 75.5">
+                    </div>
+                    <div>
+                        <label for="body-height" class="block text-sm font-medium mb-1">Altura (cm):</label>
+                        <input type="number" id="body-height" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 175">
+                    </div>
+                    <div>
+                        <label for="body-age" class="block text-sm font-medium mb-1">Edad:</label>
+                        <input type="number" id="body-age" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 30">
+                    </div>
+                    <div>
+                        <label for="waist-size" class="block text-sm font-medium mb-1">Medida de Cintura (cm):</label>
+                        <input type="number" id="waist-size" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 85.0">
+                    </div>
+                    <div>
+                        <label for="neck-size" class="block text-sm font-medium mb-1">Medida de Cuello (cm):</label>
+                        <input type="number" id="neck-size" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 38.0">
+                    </div>
+                    <div>
+                        <label for="hip-size" class="block text-sm font-medium mb-1">Medida de Cadera (cm):</label>
+                        <input type="number" id="hip-size" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500" placeholder="Ej: 100.0">
+                    </div>
+                    <div>
+                        <label for="body-gender" class="block text-sm font-medium mb-1">Género:</label>
+                        <select id="body-gender" class="w-full p-2 rounded-xl bg-gray-600 border border-gray-500">
+                            <option value="">Selecciona</option>
+                            <option value="male">Hombre</option>
+                            <option value="female">Mujer</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="save-body-progress-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full w-full transition-colors duration-200">
+                    Guardar Progreso
+                </button>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4">Historial de Peso (kg)</h3>
+                <div class="mb-8">
+                    <canvas id="body-weight-chart"></canvas>
+                </div>
+                <h3 class="text-xl font-bold mb-4">Historial de Grasa Corporal (%)</h3>
+                <div class="mb-8">
+                    <canvas id="body-fat-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Selector para el gráfico de Progreso de Peso por ejercicio-->
+            <div class="mb-4">
+                <label for="exercise-chart-selector" class="block text-lg font-medium mb-2">Progreso de Peso (por ejercicio):</label>
+                <select id="exercise-chart-selector" class="w-full p-2 rounded-xl bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+            </div>
+            <div class="mb-8">
+                <canvas id="weight-chart"></canvas>
+            </div>
+        </section>
     </div>
-    
-    <!-- Modal para agregar/editar ejercicio -->
-    <div id="exercise-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div class="card w-full md:w-1/2 p-6 md:p-8">
-            <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-4">Agregar Ejercicio</h3>
+
+    <!-- Modal para Añadir/Editar Ejercicio -->
+    <div id="exercise-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4">
+        <div class="bg-gray-800 p-6 rounded-3xl shadow-xl w-full max-w-md">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4">Añadir Nuevo Ejercicio</h3>
             <form id="exercise-form" class="space-y-4">
                 <div>
-                    <label for="exercise-name" class="block text-sm font-medium text-gray-400 light:text-gray-600">Nombre del ejercicio</label>
-                    <input type="text" id="exercise-name" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                    <label for="exercise-name" class="block text-sm font-medium mb-1">Nombre del Ejercicio:</label>
+                    <input type="text" id="exercise-name" required class="w-full p-2 rounded-xl bg-gray-700 border border-gray-600">
                 </div>
                 <div>
-                    <label for="exercise-sets" class="block text-sm font-medium text-gray-400 light:text-gray-600">Sets</label>
-                    <input type="number" id="exercise-sets" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                    <label for="exercise-sets" class="block text-sm font-medium mb-1">Series:</label>
+                    <input type="number" id="exercise-sets" required class="w-full p-2 rounded-xl bg-gray-700 border border-gray-600">
                 </div>
                 <div>
-                    <label for="exercise-reps" class="block text-sm font-medium text-gray-400 light:text-gray-600">Reps</label>
-                    <input type="number" id="exercise-reps" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                    <label for="exercise-reps" class="block text-sm font-medium mb-1">Repeticiones:</label>
+                    <input type="text" id="exercise-reps" required class="w-full p-2 rounded-xl bg-gray-700 border border-gray-600" placeholder="Ej: 10,8,6">
                 </div>
                 <div>
-                    <label for="exercise-weights" class="block text-sm font-medium text-gray-400 light:text-gray-600">Pesos (separados por comas)</label>
-                    <input type="text" id="exercise-weights" placeholder="Ej: 60,65,70" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900" required>
+                    <label for="exercise-weights" class="block text-sm font-medium mb-1">Pesos (kg):</label>
+                    <input type="text" id="exercise-weights" required class="w-full p-2 rounded-xl bg-gray-700 border border-gray-600" placeholder="Ej: 50,60,70">
                 </div>
-                <div class="flex space-x-4">
-                    <button type="button" id="cancel-exercise-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-exercise-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
                         Cancelar
                     </button>
-                    <button type="submit" id="save-exercise-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
                         Guardar
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Modal de Confirmación de Borrado -->
-    <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div class="card w-full md:w-1/3 p-6 md:p-8 text-center">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">Confirmar Eliminación</h3>
-            <p class="text-gray-400 light:text-gray-600 mb-6">¿Estás seguro de que quieres eliminar este ejercicio?</p>
-            <div class="flex space-x-4">
-                <button id="cancel-delete-btn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                    Cancelar
-                </button>
-                <button id="confirm-delete-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                    Eliminar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Alerta del Temporizador -->
-    <div id="timer-alert-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div class="card w-full md:w-1/3 p-6 md:p-8 text-center">
-            <h3 class="text-xl md:text-2xl font-bold mb-4">¡Tiempo casi terminado!</h3>
-            <p class="text-gray-400 light:text-gray-600 mb-6">Quedan menos de 10 segundos para tu descanso.</p>
-            <button id="close-timer-alert-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                Entendido
+    
+    <!-- Modal de Actualización (simulado) -->
+    <div id="update-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4">
+        <div class="bg-gray-800 p-6 rounded-3xl shadow-xl w-full max-w-md text-center">
+            <h3 class="text-2xl font-bold mb-2 text-blue-400">¡Actualización Disponible!</h3>
+            <p class="text-lg mb-4">Versión Alpha V.A.4.5.</p>
+            <p class="text-sm text-gray-400">
+                - Selector de tema con íconos de sol y luna.<br>
+                - Nuevo botón de 3 minutos para el temporizador de descanso.<br>
+                - Íconos para editar y eliminar ejercicios en las rutinas.<br>
+                - Opción para editar y eliminar comentarios.<br>
+                - Nueva sección de progreso corporal con cálculo de IMC y % de grasa corporal.
+            </p>
+            <button id="close-update-modal-btn" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full">
+                Cerrar
             </button>
         </div>
     </div>
-    
-    <div class="container mx-auto p-4 md:p-8 space-y-8">
-        <!-- Encabezado -->
-        <header class="header-bg bg-cover bg-center rounded-3xl p-6 md:p-8 text-white">
-            <div class="backdrop-blur-sm bg-gray-900 bg-opacity-50 rounded-2xl p-4 md:p-6 text-center">
-                <h1 class="text-2xl md:text-5xl font-black mb-2">KALYX</h1>
-                <p class="text-sm md:text-lg font-light mb-4">App de Entrenamiento PRO (Versión Alpha V.A.4.3.)</p>
-                <!-- El ID de usuario ya no es necesario para el almacenamiento local -->
-            </div>
-        </header>
 
-        <!-- Controles globales -->
-        <div class="flex flex-col sm:flex-row items-center justify-between w-full space-y-4 sm:space-y-0">
-            <div id="days-selector" class="flex flex-wrap justify-center sm:justify-start gap-1 w-full sm:w-auto">
-                <!-- Los botones de los días se generarán aquí -->
-            </div>
-            <button id="theme-toggle-btn" class="p-3 md:p-4 rounded-full bg-gray-700 light:bg-gray-200 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white light:text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Main Content -->
-        <main class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
-            <!-- Columna principal de contenido (izquierda en desktop, top en móvil) -->
-            <div class="lg:col-span-2 space-y-8 order-1">
-                <!-- Sección de Rutinas -->
-                <section class="card p-6 md:p-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl md:text-2xl font-bold">Rutina de Hoy</h2>
-                        <div class="space-x-2">
-                            <button id="add-exercise-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-full transition-colors text-sm">
-                                Agregar
-                            </button>
-                            <button id="edit-routine-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded-full transition-colors text-sm">
-                                Editar
-                            </button>
-                        </div>
-                    </div>
-                    <ul id="routines-list" class="space-y-4">
-                        <!-- Las rutinas se generarán aquí -->
-                    </ul>
-                </section>
-                
-                <!-- Resumen de la semana (aparece aquí en móvil) -->
-                <section class="card p-6 md:p-8 order-2 lg:hidden">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Resumen de la semana</h2>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Ejercicios Completados:</span>
-                            <span id="completed-exercises" class="font-bold text-lg">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Días de entrenamiento completados:</span>
-                            <span id="completed-training-days" class="font-bold text-lg">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
-                            <span id="total-time" class="font-bold text-lg">0</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Temporizador de descanso (aparece aquí en móvil) -->
-                <section class="card p-6 md:p-8 text-center order-3 lg:hidden">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
-                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">03:00</div> <!-- Valor inicial del temporizador -->
-                    <div class="flex justify-center space-x-4">
-                        <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Iniciar
-                        </button>
-                        <button id="pause-timer-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Pausar
-                        </button>
-                        <button id="reset-timer-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Reiniciar
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Sección de Racha Semanal -->
-                <section id="streak-section" class="card p-6 md:p-8 order-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl md:text-2xl font-bold">Tu Racha Semanal</h2>
-                        <span id="streak-level" class="px-3 py-1 rounded-full text-sm font-semibold text-white"></span>
-                    </div>
-                    <p id="streak-message" class="text-md text-gray-400 light:text-gray-600 mb-4"></p>
-                    <div class="w-full h-2 bg-gray-700 light:bg-gray-200 rounded-full">
-                        <div id="streak-progress-bar" class="h-2 bg-blue-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
-                    </div>
-                </section>
-                
-                <!-- Sección de Gráficos de Progreso -->
-                <section class="card p-6 md:p-8 order-5">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso de Peso</h2>
-                    <div class="mb-4 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4">
-                        <label for="exercise-chart-selector" class="text-sm font-semibold text-gray-400 light:text-gray-600">Selecciona un ejercicio:</label>
-                        <select id="exercise-chart-selector" class="flex-grow bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 p-2 rounded-lg"></select>
-                    </div>
-                    <div class="h-64">
-                        <canvas id="progress-chart"></canvas>
-                    </div>
-                </section>
-
-                <!-- Nueva Sección de Progreso Corporal Semanal -->
-                <section class="card p-6 md:p-8 order-6">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Progreso Corporal Semanal</h2>
-                    <form id="body-progress-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="progress-date" class="block text-sm font-medium text-gray-400 light:text-gray-600">Fecha</label>
-                            <input type="date" id="progress-date" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
-                        </div>
-                        <div>
-                            <label for="progress-weight" class="block text-sm font-medium text-gray-400 light:text-gray-600">Peso (kg)</label>
-                            <input type="number" step="0.1" id="progress-weight" placeholder="Ej: 75.5" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
-                        </div>
-                        <div>
-                            <label for="progress-height" class="block text-sm font-medium text-gray-400 light:text-gray-600">Altura (cm)</label>
-                            <input type="number" step="0.1" id="progress-height" placeholder="Ej: 175" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
-                        </div>
-                        <div>
-                            <label for="progress-age" class="block text-sm font-medium text-gray-400 light:text-gray-600">Edad</label>
-                            <input type="number" id="progress-age" placeholder="Ej: 30" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
-                        </div>
-                        <div>
-                            <label for="progress-gender" class="block text-sm font-medium text-gray-400 light:text-gray-600">Género</label>
-                            <select id="progress-gender" class="w-full mt-1 p-2 rounded-lg bg-gray-700 light:bg-gray-200 text-white light:text-gray-900">
-                                <option value="" disabled selected>Selecciona</option>
-                                <option value="1">Masculino</option>
-                                <option value="0">Femenino</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2 mt-4">
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                                Guardar Progreso
-                            </button>
-                        </div>
-                    </form>
-
-                    <h3 class="text-lg md:text-xl font-bold mb-2 mt-8">Historial de Peso (kg)</h3>
-                    <div class="h-64 mb-8">
-                        <canvas id="weight-history-chart"></canvas>
-                    </div>
-
-                    <h3 class="text-lg md:text-xl font-bold mb-2">Historial de Grasa Corporal (%)</h3>
-                    <div class="h-64">
-                        <canvas id="bodyfat-history-chart"></canvas>
-                    </div>
-                </section>
-
-                <!-- Formulario de comentarios (aparece aquí en móvil) -->
-                <section class="card p-6 md:p-8 order-7 lg:hidden">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Comentarios y Notas</h2>
-                    <div id="comments-list" class="space-y-4 mb-4 text-sm max-h-64 overflow-y-auto">
-                        <!-- Los comentarios se generarán aquí -->
-                    </div>
-                    <form id="comment-form" class="space-y-4">
-                        <textarea id="new-comment-text" rows="3" placeholder="Agrega una nota..." class="w-full bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Agregar Nota
-                        </button>
-                    </form>
-                </section>
-            </div>
-            
-            <!-- Columna lateral para desktop (oculta en móvil) -->
-            <div class="hidden lg:block lg:col-span-1 space-y-8 order-last">
-                <!-- Resumen de la semana (desktop) -->
-                <section class="card p-6 md:p-8">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Resumen de la semana</h2>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Ejercicios Completados:</span>
-                            <span id="completed-exercises" class="font-bold text-lg">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Días de entrenamiento completados:</span>
-                            <span id="completed-training-days" class="font-bold text-lg">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 light:text-gray-600">Tiempo Total (min):</span>
-                            <span id="total-time" class="font-bold text-lg">0</span>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Temporizador de descanso (desktop) -->
-                <section class="card p-6 md:p-8 text-center">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Temporizador de Descanso</h2>
-                    <div id="timer-display" class="text-6xl font-bold text-blue-500 mb-4">03:00</div> <!-- Valor inicial del temporizador -->
-                    <div class="flex justify-center space-x-4">
-                        <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Iniciar
-                        </button>
-                        <button id="pause-timer-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Pausar
-                        </button>
-                        <button id="reset-timer-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Reiniciar
-                        </button>
-                    </div>
-                </section>
-
-                <!-- Formulario de comentarios (desktop) -->
-                <section class="card p-6 md:p-8">
-                    <h2 class="text-xl md:text-2xl font-bold mb-4">Comentarios y Notas</h2>
-                    <div id="comments-list" class="space-y-4 mb-4 text-sm max-h-64 overflow-y-auto">
-                        <!-- Los comentarios se generarán aquí -->
-                    </div>
-                    <form id="comment-form" class="space-y-4">
-                        <textarea id="new-comment-text" rows="3" placeholder="Agrega una nota..." class="w-full bg-gray-700 light:bg-gray-200 text-white light:text-gray-900 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors">
-                            Agregar Nota
-                        </button>
-                    </form>
-                </section>
-            </div>
-        </main>
-
-        <!-- Pie de página -->
-        <footer class="text-center text-gray-500 light:text-gray-400 text-sm mt-8">
-            <p>&copy; 2025 KALYX. Todos los derechos reservados.</p>
-            <p class="mt-2">¡Ayúdanos a mejorar! Responde nuestra <a href="https://forms.gle/r2gMpg3Q4sW95afLA" target="_blank" class="text-blue-500 hover:underline">encuesta sobre la app</a> para darnos tus comentarios.</p>
-        </footer>
-    </div>
-    
-    <script type="module">
-        // Declaración de variables globales
-        const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-        
+    <script>
+        // Variables globales
         let appData = {
-            routines: daysOfWeek.map(() => []),
+            routines: [],
             progress: {},
             comments: [],
-            weekStart: null,
+            weekStart: '',
             bodyProgress: []
         };
+        // CORRECCIÓN: El método getDay() de JS devuelve 0 para domingo, 1 para lunes, etc.
+        // La lógica del código asigna 0 a lunes. Se ajusta la variable para que coincida.
+        let currentDay = (new Date().getDay() + 6) % 7; 
+        const daysOfWeek = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         
-        let currentDay = new Date().getDay();
-        currentDay = currentDay === 0 ? 6 : currentDay - 1; // 0=Domingo -> 6, 1=Lunes -> 0
-
+        // Modal de ejercicio
         let isEditMode = false;
-        let exerciseToEditIndex = null;
-        let exerciseToDeleteIndex = null; // Variable para almacenar el índice del ejercicio a borrar
-        
-        let timerRunning = false;
-        let timerSeconds = 180; // 3 minutos (3 * 60 segundos)
-        let timerInterval = null;
-        let timerAlertShown = false; // Bandera para controlar si la alerta ya se mostró
+        let exerciseToEditIndex = -1;
+
+        // Modal de comentario
+        let isCommentEditMode = false;
+        let commentToEditIndex = -1;
+
+        // Gráficos
+        let weightChart = null;
+        let bodyWeightChart = null;
+        let bodyFatChart = null;
+
+        // Temporizador
+        let timer = null;
+        let timeLeft = 0;
+        let isTimerRunning = false;
+        let intervalId = null;
+        let timerSetButtons = document.querySelectorAll('.mt-4 > button');
 
         // Funciones de utilidad
         function getWeekStartDate() {
             const now = new Date();
             const day = now.getDay();
-            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Ajusta para que el lunes sea el primer día
             return new Date(now.setDate(diff));
         }
 
-        function getProgressPercentage(total, completed) {
-            return total > 0 ? Math.round((completed / total) * 100) : 0;
+        function saveAppData() {
+            localStorage.setItem('kalyxAppData', JSON.stringify(appData));
+            console.log("Datos guardados en localStorage.");
         }
 
-        // Carga y guarda datos (AHORA CON LOCALSTORAGE)
         function loadAppData() {
             console.log("Intentando cargar datos de la aplicación desde localStorage...");
             const savedData = JSON.parse(localStorage.getItem('kalyxAppData'));
             const weekStartDate = getWeekStartDate().toISOString().split('T')[0];
 
             if (savedData) {
-                // Si la semana no ha cambiado, carga los datos guardados
-                if (savedData.weekStart === weekStartDate) {
-                    appData = savedData;
-                    console.log("Datos de la aplicación cargados desde localStorage para la semana actual.");
-                } else {
-                    // Si la semana ha cambiado, reinicia los datos de rutina y progreso semanal
-                    console.log("La semana ha cambiado o no hay datos para la semana actual, reiniciando los datos de rutina.");
+                // Siempre carga los datos acumulativos (comentarios, progreso corporal y progreso de peso).
+                appData.comments = savedData.comments || [];
+                appData.bodyProgress = savedData.bodyProgress || [];
+                appData.progress = savedData.progress || {}; // Cargar el historial de progreso de peso
+
+                // Reinicia las rutinas solo si la semana ha cambiado
+                if (savedData.weekStart !== weekStartDate) {
+                    console.log("La semana ha cambiado, reiniciando los datos de rutina.");
                     appData.routines = daysOfWeek.map(() => []);
-                    appData.progress = {};
-                    // Los comentarios y el progreso corporal se mantienen, ya que son acumulativos
-                    appData.comments = savedData.comments || []; 
-                    appData.bodyProgress = savedData.bodyProgress || [];
                     appData.weekStart = weekStartDate;
+                } else {
+                    appData.routines = savedData.routines || daysOfWeek.map(() => []);
+                    appData.weekStart = savedData.weekStart;
                 }
             } else {
-                // Si no existe el documento, inicializa con datos por defecto
+                // Si no hay datos, inicializa todo desde cero.
                 console.log("No se encontraron datos de la aplicación en localStorage. Iniciando desde cero.");
                 appData.routines = daysOfWeek.map(() => []);
                 appData.progress = {};
@@ -429,461 +373,363 @@
                 appData.bodyProgress = [];
             }
 
-            // Cargar el tema guardado (sigue usando localStorage para el tema)
             const savedTheme = localStorage.getItem('kalyxTheme');
-            if (savedTheme) {
-                document.body.classList.add(savedTheme);
+            if (savedTheme === 'light') {
+                document.body.classList.add('light');
+                document.getElementById('theme-icon').classList.remove('ph-sun');
+                document.getElementById('theme-icon').classList.add('ph-moon');
             } else {
-                document.body.classList.add('dark'); 
+                document.body.classList.add('dark');
+                document.getElementById('theme-icon').classList.remove('ph-moon');
+                document.getElementById('theme-icon').classList.add('ph-sun');
                 localStorage.setItem('kalyxTheme', 'dark');
             }
-            saveAppData(); // Guarda los datos iniciales o actualizados en localStorage
+            saveAppData();
         }
 
-        function saveAppData() {
-            localStorage.setItem('kalyxAppData', JSON.stringify(appData));
-            console.log("Datos guardados en localStorage.");
-        }
-
-        // Renderizado de la UI
+        // Funciones del DOM
         function renderRoutines() {
             const routinesList = document.getElementById('routines-list');
             routinesList.innerHTML = '';
-            const routinesForToday = appData.routines[currentDay] || [];
-            if (routinesForToday.length === 0) {
-                routinesList.innerHTML = '<li class="p-4 text-center text-gray-500 light:text-gray-400">¡Hoy es día de descanso o la rutina está vacía! 💪</li>';
+            const routines = appData.routines[currentDay] || [];
+            
+            if (routines.length === 0) {
+                routinesList.innerHTML = `<p class="text-center text-gray-400">No hay ejercicios para ${daysOfWeek[currentDay]}.</p>`;
                 return;
             }
-            routinesForToday.forEach((routine, index) => {
-                const listItem = document.createElement('li');
-                listItem.className = 'flex items-center justify-between p-4';
+
+            routines.forEach((exercise, index) => {
+                const exerciseItem = document.createElement('div');
+                exerciseItem.classList.add('bg-gray-700', 'p-4', 'rounded-2xl', 'flex', 'flex-col', 'md:flex-row', 'items-center', 'justify-between', 'space-y-2', 'md:space-y-0');
                 
-                if (isEditMode) {
-                    listItem.innerHTML = `
-                        <div class="flex-1">
-                            <h3 class="font-bold text-lg">${routine.name}</h3>
-                            <p class="text-sm text-gray-400 light:text-gray-600">${routine.sets} sets x ${routine.reps} reps @ ${routine.weights.join(', ')} kg</p>
-                        </div>
-                        <div class="space-x-2">
-                            <button class="edit-exercise-btn bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-full transition-colors" data-index="${index}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L15.232 5.232z" />
-                                </svg>
-                            </button>
-                            <button class="delete-exercise-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full transition-colors" data-index="${index}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    listItem.innerHTML = `
-                        <div class="flex-1">
-                            <h3 class="font-bold text-lg">${routine.name}</h3>
-                            <p class="text-sm text-gray-400 light:text-gray-600">${routine.sets} sets x ${routine.reps} reps @ ${routine.weights.join(', ')} kg</p>
-                        </div>
-                        <input type="checkbox" data-index="${index}" ${routine.completed ? 'checked' : ''} class="form-checkbox h-6 w-6 text-blue-600 light:text-blue-500 rounded-full border-gray-300 light:border-gray-500 focus:ring-blue-500 light:focus:ring-blue-500">
-                    `;
-                }
-                
-                routinesList.appendChild(listItem);
-            });
-        }
-
-        function renderProgressGraphs() {
-            const ctx = document.getElementById('progress-chart').getContext('2d');
-            const exerciseName = document.getElementById('exercise-chart-selector').value;
-            const progressData = appData.progress[exerciseName] || [];
-
-            const labels = progressData.map(d => new Date(d.date));
-            const data = progressData.map(d => d.weight);
-
-            if (window.myChart) {
-                window.myChart.destroy();
-            }
-
-            window.myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `Peso en ${exerciseName} (kg)`,
-                        data: data,
-                        borderColor: '#2563eb', // blue-600
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#2563eb',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day'
-                            },
-                            ticks: {
-                                color: '#a0aec0' // gray-400
-                            },
-                            grid: {
-                                color: 'rgba(160, 174, 192, 0.2)'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#a0aec0' // gray-400
-                            },
-                            grid: {
-                                color: 'rgba(160, 174, 192, 0.2)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#e2e8f0' // slate-200
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderBodyProgressCharts() {
-            const weightCtx = document.getElementById('weight-history-chart').getContext('2d');
-            const bodyFatCtx = document.getElementById('bodyfat-history-chart').getContext('2d');
-            
-            const labels = appData.bodyProgress.map(d => new Date(d.date));
-            const weightData = appData.bodyProgress.map(d => d.weight);
-            const bodyFatData = appData.bodyProgress.map(d => d.bodyFat);
-
-            if (window.weightChart) {
-                window.weightChart.destroy();
-            }
-            if (window.bodyFatChart) {
-                window.bodyFatChart.destroy();
-            }
-
-            window.weightChart = new Chart(weightCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Peso (kg)',
-                        data: weightData,
-                        borderColor: '#2563eb', // blue-600
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#2563eb',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: { unit: 'day' },
-                            ticks: { color: '#a0aec0' },
-                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
-                        },
-                        y: {
-                            beginAtZero: false,
-                            ticks: { color: '#a0aec0' },
-                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
-                        }
-                    },
-                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
-                }
-            });
-
-            window.bodyFatChart = new Chart(bodyFatCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Grasa Corporal (%)',
-                        data: bodyFatData,
-                        borderColor: '#d97706', // amber-600
-                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#d97706',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: { unit: 'day' },
-                            ticks: { color: '#a0aec0' },
-                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
-                        },
-                        y: {
-                            beginAtZero: false,
-                            ticks: { color: '#a0aec0' },
-                            grid: { color: 'rgba(160, 174, 192, 0.2)' }
-                        }
-                    },
-                    plugins: { legend: { labels: { color: '#e2e8f0' } } }
-                }
+                const exerciseDetails = `
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold">${exercise.name}</h4>
+                        <p class="text-sm text-gray-400">Series: ${exercise.sets}, Reps: ${exercise.reps.join(', ')}</p>
+                        <p class="text-sm text-gray-400">Pesos: ${exercise.weights.join(', ')} kg</p>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                        <label class="flex items-center cursor-pointer">
+                            <span class="mr-2 text-gray-400">Completado</span>
+                            <input type="checkbox" data-index="${index}" class="form-checkbox h-5 w-5 text-blue-600 bg-gray-900 border-gray-600 rounded-md" ${exercise.completed ? 'checked' : ''}>
+                        </label>
+                        <button class="edit-exercise-btn text-blue-400 hover:text-blue-500 font-bold p-2 rounded-full hover:bg-gray-600 transition-colors duration-200" data-index="${index}">
+                            <i class="ph-bold ph-pencil"></i>
+                        </button>
+                        <button class="delete-exercise-btn text-red-400 hover:text-red-500 font-bold p-2 rounded-full hover:bg-gray-600 transition-colors duration-200" data-index="${index}">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </div>
+                `;
+                exerciseItem.innerHTML = exerciseDetails;
+                routinesList.appendChild(exerciseItem);
             });
         }
 
         function renderComments() {
             const commentsList = document.getElementById('comments-list');
             commentsList.innerHTML = '';
-            if (appData.comments.length === 0) {
-                commentsList.innerHTML = '<p class="text-center text-gray-500 light:text-gray-400">No hay notas aún.</p>';
+            const commentsForDay = appData.comments.filter(comment => comment.day === currentDay);
+            
+            if (commentsForDay.length === 0) {
+                commentsList.innerHTML = `<p class="text-center text-gray-400">No hay comentarios para este día.</p>`;
+                return;
             }
-            appData.comments.forEach(comment => {
-                const p = document.createElement('p');
-                p.textContent = comment;
-                p.className = 'p-4 bg-gray-700 light:bg-gray-200 rounded-xl text-gray-300 light:text-gray-900';
-                commentsList.appendChild(p);
+
+            commentsForDay.forEach((comment, index) => {
+                const commentItem = document.createElement('div');
+                commentItem.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'flex', 'justify-between', 'items-center');
+                commentItem.innerHTML = `
+                    <p class="flex-grow comment-text">${comment.text}</p>
+                    <div class="flex space-x-2">
+                        <button class="edit-comment-btn text-blue-400 hover:text-blue-500 font-bold" data-index="${index}">
+                            <i class="ph-bold ph-pencil"></i>
+                        </button>
+                        <button class="delete-comment-btn text-red-400 hover:text-red-500 font-bold" data-index="${index}">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </div>
+                `;
+                commentsList.appendChild(commentItem);
             });
+        }
+        
+        function updateSummary() {
+            const trainedDays = appData.routines.filter(day => day.some(ex => ex.completed)).length;
+            const completedExercises = appData.routines.flat().filter(ex => ex.completed).length;
+
+            document.getElementById('trained-days').textContent = trainedDays;
+            document.getElementById('completed-exercises').textContent = completedExercises;
+        }
+
+        function setupDaySelector() {
+            const dayButtons = document.querySelectorAll('.day-selector-btn');
+            dayButtons.forEach((button, index) => {
+                button.textContent = daysOfWeek[index].substring(0, 3);
+                button.addEventListener('click', () => {
+                    dayButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                    button.classList.add('bg-blue-500', 'text-white');
+                    currentDay = index;
+                    renderRoutines();
+                    renderComments();
+                });
+            });
+        }
+        
+        // Lógica de Gráficos
+        function createOrUpdateChart(chartId, chartType, labels, data, labelText, yLabelText, isBodyChart = false) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            const existingChart = Chart.getChart(ctx);
+            
+            const isDarkMode = document.body.classList.contains('dark');
+            const textColor = isDarkMode ? '#f1f5f9' : '#1f2937';
+            const gridColor = isDarkMode ? 'rgba(241, 245, 249, 0.1)' : 'rgba(31, 41, 55, 0.1)';
+            const borderColor = '#3b82f6';
+            const backgroundColor = 'rgba(59, 130, 246, 0.2)';
+
+            if (existingChart) {
+                existingChart.data.labels = labels;
+                existingChart.data.datasets[0].data = data;
+                existingChart.data.datasets[0].label = labelText;
+                existingChart.options.scales.y.title.text = yLabelText;
+                existingChart.update();
+            } else {
+                new Chart(ctx, {
+                    type: chartType,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: labelText,
+                            data: data,
+                            borderColor: borderColor,
+                            backgroundColor: backgroundColor,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: textColor
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day',
+                                    tooltipFormat: 'dd MMM',
+                                    displayFormats: {
+                                        day: 'dd MMM'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Fecha',
+                                    color: textColor
+                                },
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: yLabelText,
+                                    color: textColor
+                                },
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateWeightChart() {
+            const selector = document.getElementById('exercise-chart-selector');
+            const exerciseName = selector.value;
+            
+            if (exerciseName) {
+                const progressData = appData.progress[exerciseName] || [];
+                const labels = progressData.map(p => new Date(p.date));
+                const data = progressData.map(p => p.weight);
+                createOrUpdateChart('weight-chart', 'line', labels, data, `Peso de ${exerciseName} (kg)`, 'Peso (kg)');
+            } else {
+                // Limpiar el gráfico si no hay ejercicio seleccionado
+                const ctx = document.getElementById('weight-chart').getContext('2d');
+                const existingChart = Chart.getChart(ctx);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+            }
         }
 
         function updateExerciseChartSelector() {
             const selector = document.getElementById('exercise-chart-selector');
-            selector.innerHTML = '';
-            const allExercises = new Set();
-            Object.keys(appData.progress).forEach(exerciseName => allExercises.add(exerciseName));
+            selector.innerHTML = '<option value="">Selecciona un ejercicio</option>';
+            const allExerciseNames = new Set();
             
-            if (allExercises.size === 0) {
+            // Recorre todas las rutinas de la semana para encontrar todos los ejercicios
+            appData.routines.flat().forEach(exercise => {
+                allExerciseNames.add(exercise.name);
+            });
+            
+            allExerciseNames.forEach(name => {
                 const option = document.createElement('option');
-                option.textContent = 'No hay datos de progreso';
+                option.value = name;
+                option.textContent = name;
                 selector.appendChild(option);
-                selector.disabled = true;
-            } else {
-                selector.disabled = false;
-                allExercises.forEach(exerciseName => {
-                    const option = document.createElement('option');
-                    option.value = exerciseName;
-                    option.textContent = exerciseName;
-                    selector.appendChild(option);
-                });
-            }
-            renderProgressGraphs();
-        }
-
-        // Lógica de la nueva sección de Racha
-        function calculateWeeklyProgress() {
-            let totalExercises = 0;
-            let completedExercises = 0;
-
-            appData.routines.forEach(dayRoutine => {
-                totalExercises += dayRoutine.length;
-                dayRoutine.forEach(exercise => {
-                    if (exercise.completed) {
-                        completedExercises++;
-                    }
-                });
             });
-
-            return { total: totalExercises, completed: completedExercises };
+            
+            selector.addEventListener('change', updateWeightChart);
+            updateWeightChart(); // Llama para actualizar el gráfico con el primer ejercicio
         }
 
-        function updateStreak() {
-            const progress = calculateWeeklyProgress();
-            const progressPercentage = getProgressPercentage(progress.total, progress.completed);
+        function renderBodyProgressCharts() {
+            const labels = appData.bodyProgress.map(p => new Date(p.date));
+            const bodyWeightData = appData.bodyProgress.map(p => p.weight);
+            const bodyFatData = appData.bodyProgress.map(p => p.bodyFat);
             
-            const streakLevelEl = document.getElementById('streak-level');
-            const streakMessageEl = document.getElementById('streak-message');
-            const progressBarEl = document.getElementById('streak-progress-bar');
-            
-            progressBarEl.style.width = `${progressPercentage}%`;
-            
-            let level = '';
-            let message = '';
-            let bgColor = '';
-            
-            if (progressPercentage >= 85) {
-                level = 'Alto';
-                bgColor = 'bg-green-500';
-                message = '¡Impresionante! Tu dedicación ha dado sus frutos. ¡Sigue con este ritmo!';
-            } else if (progressPercentage >= 50) {
-                level = 'Medio';
-                bgColor = 'bg-yellow-500';
-                message = '¡Vas por un excelente camino! La constancia es la clave para alcanzar tus objetivos. ¡No te detengas!';
-            } else {
-                level = 'Bajo';
-                bgColor = 'bg-red-500';
-                message = '¡No te rindas! Lo que haces cada día importa más que lo que haces de vez en cuando. ¡Mañana es un nuevo comienzo!';
-            }
-            
-            streakLevelEl.textContent = level;
-            streakLevelEl.className = `px-3 py-1 rounded-full text-sm font-semibold text-white ${bgColor}`;
-            streakMessageEl.textContent = message;
+            createOrUpdateChart('body-weight-chart', 'line', labels, bodyWeightData, 'Peso Corporal (kg)', 'Peso (kg)');
+            createOrUpdateChart('body-fat-chart', 'line', labels, bodyFatData, 'Grasa Corporal (%)', '% Grasa');
         }
 
-        function updateSummary() {
-            const completedExercisesEl = document.getElementById('completed-exercises');
-            const completedTrainingDaysEl = document.getElementById('completed-training-days'); // Nuevo elemento
-            const totalTimeEl = document.getElementById('total-time');
-
-            let totalCompletedExercises = 0;
-            let completedTrainingDays = 0; // Contador para días de entrenamiento completados
-            let totalTime = 0;
-
-            appData.routines.forEach((dayRoutine, dayIndex) => { // Añadido dayIndex
-                let allExercisesCompletedForDay = true;
-                let hasExercises = dayRoutine.length > 0;
-                // let exercisesCompletedToday = 0; // No se usa directamente para el resumen, pero útil para depurar
-
-                dayRoutine.forEach(exercise => {
-                    if (exercise.completed) {
-                        // exercisesCompletedToday++; // No se usa directamente para el resumen
-                        totalCompletedExercises++;
-                        totalTime += exercise.sets * 5; // Asume 5 minutos por serie
-                    } else {
-                        allExercisesCompletedForDay = false;
-                    }
-                });
-
-                // Un día se considera "completado" si:
-                // 1. Tenía ejercicios Y todos ellos fueron completados.
-                // 2. NO tenía ejercicios (es un día de descanso designado).
-                if ((hasExercises && allExercisesCompletedForDay) || (!hasExercises)) {
-                    completedTrainingDays++;
-                }
-            });
-
-            completedExercisesEl.textContent = totalCompletedExercises;
-            completedTrainingDaysEl.textContent = completedTrainingDays; // Actualiza el nuevo elemento
-            totalTimeEl.textContent = totalTime;
-            
-            updateStreak();
-        }
-
-        // Modal de actualización
-        function showUpdateModal() {
-            const modal = document.getElementById('update-modal');
-            const lastViewedVersion = localStorage.getItem('lastViewedVersion');
-            const currentVersion = 'V.A.4.3.'; // Actualizado a V.A.4.3.
-
-            if (lastViewedVersion !== currentVersion) {
-                modal.classList.remove('hidden');
-                localStorage.setItem('lastViewedVersion', currentVersion);
-            }
-            document.getElementById('close-modal-btn').addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
+        // Lógica del Temporizador
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
         
-        // Selector de días
-        function setupDaySelector() {
-            const daysSelector = document.getElementById('days-selector');
-            daysSelector.innerHTML = '';
-            daysOfWeek.forEach((day, index) => {
-                const button = document.createElement('button');
-                button.id = `day-${index}`;
-                button.textContent = day.substring(0, 3);
-                button.className = `p-2 rounded-xl text-white font-semibold transition-colors duration-200`;
-                daysSelector.appendChild(button);
-            });
+        function updateTimerDisplay() {
+            document.getElementById('timer-display').textContent = formatTime(timeLeft);
         }
-        
-        // Temporizador
+
         function startTimer() {
-            if (!timerRunning) {
-                timerRunning = true;
-                timerAlertShown = false; // Reinicia la bandera de alerta al iniciar el temporizador
-                timerInterval = setInterval(() => {
-                    timerSeconds--;
-                    updateTimerDisplay();
-                    if (timerSeconds <= 10 && timerSeconds > 0 && !timerAlertShown) {
+            if (!isTimerRunning && timeLeft > 0) {
+                isTimerRunning = true;
+                intervalId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(intervalId);
+                        isTimerRunning = false;
                         showTimerAlert();
-                        timerAlertShown = true;
-                    }
-                    if (timerSeconds <= 0) {
-                        resetTimer();
-                        hideTimerAlert(); // Asegura que la alerta se oculte al llegar a 0
                     }
                 }, 1000);
             }
         }
 
         function pauseTimer() {
-            timerRunning = false;
-            clearInterval(timerInterval);
+            if (isTimerRunning) {
+                clearInterval(intervalId);
+                isTimerRunning = false;
+            }
         }
 
         function resetTimer() {
             pauseTimer();
-            timerSeconds = 180; // 3 minutos
+            timeLeft = 0;
             updateTimerDisplay();
-            hideTimerAlert(); // Oculta la alerta al reiniciar
-            timerAlertShown = false; // Reinicia la bandera de alerta
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timerSeconds / 60);
-            const seconds = timerSeconds % 60;
-            const display = document.getElementById('timer-display');
-            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
         function showTimerAlert() {
-            const timerAlertModal = document.getElementById('timer-alert-modal');
-            timerAlertModal.classList.remove('hidden');
+            document.getElementById('timer-alert').classList.remove('hidden');
         }
 
         function hideTimerAlert() {
-            const timerAlertModal = document.getElementById('timer-alert-modal');
-            timerAlertModal.classList.add('hidden');
+            document.getElementById('timer-alert').classList.add('hidden');
         }
 
-
-        // Event Listeners
-        document.getElementById('days-selector').addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                document.querySelectorAll('#days-selector button').forEach(btn => {
-                    btn.classList.remove('bg-blue-500');
-                });
-                e.target.classList.add('bg-blue-500');
-                currentDay = parseInt(e.target.id.split('-')[1]);
-                renderRoutines();
+        function showUpdateModal() {
+            // Lógica para mostrar el modal de actualización la primera vez que se carga la página
+            const lastVersion = localStorage.getItem('kalyxVersion');
+            if (lastVersion !== 'V.A.4.5.') {
+                document.getElementById('update-modal').classList.remove('hidden');
+                localStorage.setItem('kalyxVersion', 'V.A.4.5.');
             }
-        });
+        }
 
-        document.getElementById('theme-toggle-btn').addEventListener('click', () => {
-            const isLight = document.body.classList.contains('light');
-            document.body.classList.remove('light', 'dark'); // Eliminar ambas clases para asegurar que solo una se aplique
-            if (isLight) {
-                document.body.classList.add('dark');
-                localStorage.setItem('kalyxTheme', 'dark');
-            } else {
-                document.body.classList.add('light');
-                localStorage.setItem('kalyxTheme', 'light');
+        // Función para calcular el % de grasa corporal
+        function calculateBodyFat(weight, height, waist, neck, hip, gender) {
+            if (gender === 'male') {
+                return 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            } else if (gender === 'female') {
+                return 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
             }
-        });
-
-        document.getElementById('comment-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newComment = document.getElementById('new-comment-text').value.trim();
-            if (newComment) {
-                appData.comments.push(newComment);
-                saveAppData();
-                renderComments();
-                document.getElementById('new-comment-text').value = '';
-            }
-        });
+            return null;
+        }
         
+        // Event Listeners
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            body.classList.toggle('light');
+            const isLight = body.classList.contains('light');
+            if (isLight) {
+                themeIcon.classList.remove('ph-sun');
+                themeIcon.classList.add('ph-moon');
+            } else {
+                themeIcon.classList.remove('ph-moon');
+                themeIcon.classList.add('ph-sun');
+            }
+            localStorage.setItem('kalyxTheme', isLight ? 'light' : 'dark');
+            // Actualizar colores de los gráficos
+            if (weightChart) weightChart.destroy();
+            if (bodyWeightChart) bodyWeightChart.destroy();
+            if (bodyFatChart) bodyFatChart.destroy();
+            updateWeightChart();
+            renderBodyProgressCharts();
+        });
+
+        document.getElementById('add-exercise-btn').addEventListener('click', () => {
+            isEditMode = false;
+            document.getElementById('modal-title').textContent = 'Añadir Nuevo Ejercicio';
+            document.getElementById('exercise-form').reset();
+            document.getElementById('exercise-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('routines-list').addEventListener('click', (e) => {
+            if (e.target.closest('.edit-exercise-btn')) {
+                const btn = e.target.closest('.edit-exercise-btn');
+                isEditMode = true;
+                exerciseToEditIndex = btn.dataset.index;
+                const exercise = appData.routines[currentDay][exerciseToEditIndex];
+                
+                document.getElementById('modal-title').textContent = 'Editar Ejercicio';
+                document.getElementById('exercise-name').value = exercise.name;
+                document.getElementById('exercise-sets').value = exercise.sets;
+                document.getElementById('exercise-reps').value = exercise.reps.join(', ');
+                document.getElementById('exercise-weights').value = exercise.weights.join(', ');
+                
+                document.getElementById('exercise-modal').classList.remove('hidden');
+
+            } else if (e.target.closest('.delete-exercise-btn')) {
+                const btn = e.target.closest('.delete-exercise-btn');
+                const index = btn.dataset.index;
+                appData.routines[currentDay].splice(index, 1);
+                saveAppData();
+                renderRoutines();
+                updateExerciseChartSelector();
+                updateSummary();
+            }
+        });
+
         document.getElementById('routines-list').addEventListener('change', (e) => {
             if (e.target.type === 'checkbox') {
                 const index = e.target.dataset.index;
@@ -892,22 +738,19 @@
                 
                 exercise.completed = isCompleted;
                 
-                // Lógica añadida para registrar el progreso de peso
                 const exerciseName = exercise.name;
-                const maxWeight = Math.Max(...exercise.weights);
+                const maxWeight = Math.max(...exercise.weights);
                 const today = new Date().toISOString().split('T')[0];
 
                 if (isCompleted) {
                     if (!appData.progress[exerciseName]) {
                         appData.progress[exerciseName] = [];
                     }
-                    // Evita duplicados para la misma fecha
                     const existingEntryIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
                     if (existingEntryIndex === -1) {
                         appData.progress[exerciseName].push({ date: today, weight: maxWeight });
                     }
                 } else {
-                    // Si se desmarca, elimina la entrada de hoy
                     if (appData.progress[exerciseName]) {
                         const todayIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
                         if (todayIndex !== -1) {
@@ -916,108 +759,104 @@
                     }
                 }
                 
-                saveAppData(); // Guardar en localStorage
+                saveAppData();
                 updateSummary();
-                updateExerciseChartSelector(); // Asegura que el gráfico se actualice
+                updateExerciseChartSelector();
             }
         });
 
-        document.getElementById('exercise-chart-selector').addEventListener('change', () => {
-            renderProgressGraphs();
-        });
+        document.getElementById('comments-list').addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
 
-        // Event Listener para el nuevo formulario de progreso corporal
-        document.getElementById('body-progress-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const date = document.getElementById('progress-date').value;
-            const weight = parseFloat(document.getElementById('progress-weight').value);
-            const height = parseFloat(document.getElementById('progress-height').value);
-            const age = parseInt(document.getElementById('progress-age').value);
-            const gender = document.getElementById('progress-gender').value;
-
-            if (date && !isNaN(weight) && !isNaN(height) && !isNaN(age) && gender !== "") {
-                const heightInMeters = height / 100;
-                const bmi = weight / (heightInMeters * heightInMeters);
-                const genderNumericValue = parseInt(gender);
-                const bodyFat = (1.2 * bmi) + (0.23 * age) - (10.8 * genderNumericValue) - 5.4;
+            const index = target.dataset.index;
+            const commentForDay = appData.comments.filter(c => c.day === currentDay)[index];
+            
+            if (target.classList.contains('edit-comment-btn')) {
+                isCommentEditMode = true;
+                const commentInput = document.getElementById('comment-input');
+                commentInput.value = commentForDay.text;
+                commentInput.focus();
                 
-                appData.bodyProgress.push({ 
-                    date: date, 
-                    weight: weight, 
-                    height: height,
-                    age: age,
-                    gender: genderNumericValue,
-                    bodyFat: bodyFat.toFixed(2)
-                });
-                
-                appData.bodyProgress.sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                saveAppData(); // Guardar en localStorage
-                renderBodyProgressCharts();
-                
-                document.getElementById('body-progress-form').reset();
-            } else {
-                console.error("Por favor, completa todos los campos correctamente.");
+                document.getElementById('add-comment-btn').textContent = 'Guardar';
+                commentToEditIndex = appData.comments.indexOf(commentForDay);
+            } else if (target.classList.contains('delete-comment-btn')) {
+                const commentIndexToRemove = appData.comments.indexOf(commentForDay);
+                if (commentIndexToRemove > -1) {
+                    appData.comments.splice(commentIndexToRemove, 1);
+                    saveAppData();
+                    renderComments();
+                }
             }
         });
 
-        // Event Listeners para el CRUD de ejercicios
-        document.getElementById('add-exercise-btn').addEventListener('click', () => {
-            isEditMode = false;
-            exerciseToEditIndex = null;
-            document.getElementById('modal-title').textContent = 'Agregar Ejercicio';
-            document.getElementById('exercise-form').reset();
-            document.getElementById('exercise-modal').classList.remove('hidden');
-        });
-
-        document.getElementById('edit-routine-btn').addEventListener('click', () => {
-            isEditMode = !isEditMode;
-            renderRoutines();
-            document.getElementById('edit-routine-btn').textContent = isEditMode ? 'Listo' : 'Editar';
-            if (isEditMode) {
-                document.getElementById('add-exercise-btn').classList.add('hidden');
-            } else {
-                document.getElementById('add-exercise-btn').classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('routines-list').addEventListener('click', (e) => {
-            if (e.target.closest('.edit-exercise-btn')) {
-                const index = e.target.closest('.edit-exercise-btn').dataset.index;
-                isEditMode = true;
-                exerciseToEditIndex = parseInt(index);
-                const exercise = appData.routines[currentDay][exerciseToEditIndex];
-                
-                document.getElementById('modal-title').textContent = 'Editar Ejercicio';
-                document.getElementById('exercise-name').value = exercise.name;
-                document.getElementById('exercise-sets').value = exercise.sets;
-                document.getElementById('exercise-reps').value = exercise.reps;
-                document.getElementById('exercise-weights').value = exercise.weights.join(',');
-                document.getElementById('exercise-modal').classList.remove('hidden');
-            }
-            if (e.target.closest('.delete-exercise-btn')) {
-                // Se ha sustituido 'confirm' por un modal personalizado
-                exerciseToDeleteIndex = e.target.closest('.delete-exercise-btn').dataset.index;
-                document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        document.getElementById('add-comment-btn').addEventListener('click', () => {
+            const input = document.getElementById('comment-input');
+            const commentText = input.value.trim();
+            if (commentText) {
+                if (isCommentEditMode) {
+                    if (commentToEditIndex > -1) {
+                        appData.comments[commentToEditIndex].text = commentText;
+                    }
+                    isCommentEditMode = false;
+                    commentToEditIndex = -1;
+                    document.getElementById('add-comment-btn').textContent = 'Añadir';
+                } else {
+                    appData.comments.push({
+                        day: currentDay,
+                        text: commentText
+                    });
+                }
+                saveAppData();
+                input.value = '';
+                renderComments();
             }
         });
         
-        // Manejadores para el modal de borrado
-        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-            if (exerciseToDeleteIndex !== null) {
-                appData.routines[currentDay].splice(parseInt(exerciseToDeleteIndex), 1);
-                saveAppData(); // Guardar en localStorage
-                renderRoutines();
-                updateSummary();
-                document.getElementById('delete-confirm-modal').classList.add('hidden');
-                exerciseToDeleteIndex = null;
-            }
-        });
+        document.getElementById('save-body-progress-btn').addEventListener('click', () => {
+            const progressDate = document.getElementById('progress-date').value;
+            const bodyWeight = parseFloat(document.getElementById('body-weight').value);
+            const bodyHeight = parseFloat(document.getElementById('body-height').value);
+            const bodyAge = parseInt(document.getElementById('body-age').value);
+            const waistSize = parseFloat(document.getElementById('waist-size').value);
+            const neckSize = parseFloat(document.getElementById('neck-size').value);
+            const hipSize = parseFloat(document.getElementById('hip-size').value);
+            const bodyGender = document.getElementById('body-gender').value;
 
-        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-            exerciseToDeleteIndex = null;
+            if (progressDate && bodyWeight && bodyHeight && bodyAge && waistSize && neckSize && bodyGender) {
+                const bodyFat = calculateBodyFat(bodyWeight, bodyHeight, waistSize, neckSize, hipSize, bodyGender);
+                
+                const newProgressEntry = {
+                    date: progressDate,
+                    weight: bodyWeight,
+                    height: bodyHeight,
+                    age: bodyAge,
+                    waist: waistSize,
+                    neck: neckSize,
+                    hip: hipSize,
+                    gender: bodyGender,
+                    bodyFat: bodyFat
+                };
+
+                const existingEntryIndex = appData.bodyProgress.findIndex(p => p.date === progressDate);
+                if (existingEntryIndex !== -1) {
+                    appData.bodyProgress[existingEntryIndex] = newProgressEntry;
+                } else {
+                    appData.bodyProgress.push(newProgressEntry);
+                }
+                
+                saveAppData();
+                renderBodyProgressCharts();
+                
+                document.getElementById('progress-date').value = '';
+                document.getElementById('body-weight').value = '';
+                document.getElementById('body-height').value = '';
+                document.getElementById('body-age').value = '';
+                document.getElementById('waist-size').value = '';
+                document.getElementById('neck-size').value = '';
+                document.getElementById('hip-size').value = '';
+                document.getElementById('body-gender').value = '';
+            }
         });
 
         document.getElementById('exercise-form').addEventListener('submit', (e) => {
@@ -1025,7 +864,7 @@
             
             const name = document.getElementById('exercise-name').value;
             const sets = parseInt(document.getElementById('exercise-sets').value);
-            const reps = parseInt(document.getElementById('exercise-reps').value);
+            const reps = document.getElementById('exercise-reps').value.split(',').map(r => parseInt(r.trim()));
             const weights = document.getElementById('exercise-weights').value.split(',').map(w => parseFloat(w.trim()));
 
             if (isEditMode) {
@@ -1034,10 +873,11 @@
                 appData.routines[currentDay].push({ name, sets, reps, weights, completed: false });
             }
 
-            saveAppData(); // Guardar en localStorage
+            saveAppData();
             renderRoutines();
             document.getElementById('exercise-modal').classList.add('hidden');
-            updateExerciseChartSelector(); // Actualiza el selector de gráficos si es un nuevo ejercicio
+            updateExerciseChartSelector();
+            updateSummary();
         });
 
         document.getElementById('cancel-exercise-btn').addEventListener('click', () => {
@@ -1048,20 +888,37 @@
         document.getElementById('start-timer-btn').addEventListener('click', startTimer);
         document.getElementById('pause-timer-btn').addEventListener('click', pauseTimer);
         document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
-        document.getElementById('close-timer-alert-btn').addEventListener('click', hideTimerAlert); // Nuevo listener para cerrar la alerta
+        document.getElementById('close-timer-alert-btn').addEventListener('click', hideTimerAlert);
+        
+        timerSetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const newTime = parseInt(button.dataset.time);
+                timeLeft = newTime;
+                updateTimerDisplay();
+                pauseTimer(); // Pausa si ya estaba corriendo
+            });
+        });
+
+        // Event listener para cerrar el modal de actualización
+        document.getElementById('close-update-modal-btn').addEventListener('click', () => {
+            document.getElementById('update-modal').classList.add('hidden');
+        });
 
         // Evento al cargar la página
         window.addEventListener('load', () => {
-            loadAppData(); // Carga los datos de la app y el tema
+            loadAppData();
             setupDaySelector();
-            document.getElementById(`day-${currentDay}`).classList.add('bg-blue-500');
+            const currentDayButton = document.querySelector(`.day-selector-btn[data-day="${currentDay}"]`);
+            if (currentDayButton) {
+                currentDayButton.classList.add('bg-blue-500', 'text-white'); // Asegura que el texto también sea blanco
+            }
             renderRoutines();
             updateSummary();
             renderComments();
             updateExerciseChartSelector();
             renderBodyProgressCharts();
             showUpdateModal();
-            updateTimerDisplay(); // Asegura que el temporizador muestre el valor inicial correcto
+            updateTimerDisplay();
         });
     </script>
 </body>
