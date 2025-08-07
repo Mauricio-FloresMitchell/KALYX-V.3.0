@@ -1,43 +1,59 @@
-KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.2.)
-KALYX es una aplicación web de entrenamiento diseñada para ayudarte a seguir y registrar tu progreso en el gimnasio. Esta versión de prueba, V.A.4.2., incluye funciones clave para gestionar rutinas, monitorear el progreso físico y mantener un registro de tus notas.
+KALYX - App de Entrenamiento PRO (Versión Alpha V.A.4.5.)
+📝 Descripción del Proyecto
+KALYX es una aplicación web de entrenamiento personal en versión Alpha (V.A.4.5.), diseñada para ayudar a los usuarios a gestionar sus rutinas de ejercicio, registrar su progreso y llevar un seguimiento de sus actividades semanales. La aplicación es totalmente local, utilizando localStorage para la persistencia de datos directamente en el navegador del usuario.
 
-Características Principales
-Rutinas Diarias Personalizables: Crea, edita y elimina ejercicios para cada día de la semana.
+✨ Características Principales
+Rutinas por Día: Crea, edita y elimina rutinas de ejercicio para cada día de la semana.
 
-Seguimiento de Progreso de Peso: Al marcar un ejercicio como completado, el peso máximo que utilizaste se registra automáticamente para que puedas visualizar tu progreso a lo largo del tiempo en un gráfico interactivo.
+Temporizador de Descanso: Un cronómetro integrado con tiempos predefinidos y alertas para gestionar tus descansos.
 
-Registro de Progreso Corporal: Introduce tu peso, altura, edad y género para calcular tu IMC y estimar tu porcentaje de grasa corporal, y visualiza el historial de estos datos en gráficos dedicados.
+Seguimiento de Progreso: Visualiza tu progreso con gráficos de peso e índice de grasa corporal, y observa la evolución del peso en cada ejercicio.
 
-Racha Semanal: Un medidor de progreso que te muestra el porcentaje de ejercicios completados en la semana, motivándote a mantener la constancia.
+Calculadora de Grasa Corporal: Utiliza la fórmula de la Marina de los EE. UU. para estimar el porcentaje de grasa corporal.
 
-Temporizador de Descanso: Un temporizador integrado para gestionar los descansos entre sets.
+Notas Diarias: Agrega comentarios o notas importantes para cada día de entrenamiento.
 
-Notas y Comentarios: Un espacio para añadir notas o comentarios relevantes sobre tu rutina o estado de ánimo.
+Tema Personalizable: Alterna entre un tema oscuro y uno claro para una experiencia de usuario adaptada a tus preferencias.
 
-Modo Claro/Oscuro: Cambia entre un tema claro y oscuro para una experiencia de usuario óptima en cualquier entorno.
+🛠️ Tecnologías Utilizadas
+HTML5: Para la estructura y semántica de la página.
 
-Multi-plataforma: La interfaz es completamente adaptable y funciona en dispositivos móviles, tablets y ordenadores.
+Tailwind CSS: Para el estilizado rápido y responsivo de la interfaz.
 
-Tecnología
-HTML5: Estructura de la aplicación.
+JavaScript (Vanilla): Para la lógica principal, manejo de eventos y manipulación del DOM.
 
-Tailwind CSS: Framework de CSS para un diseño moderno y responsivo.
+Chart.js: Para la creación de gráficos dinámicos de progreso.
 
-JavaScript (ES6+): Lógica principal de la aplicación, manejo de eventos y gestión de datos.
+Phosphor Icons: Conjunto de íconos web para una interfaz visualmente atractiva.
 
-Chart.js: Biblioteca de gráficos para la visualización del progreso de peso y el historial de peso corporal.
+🚀 Instalación y Uso
+La aplicación está contenida en un solo archivo index.html, por lo que no se requiere de un servidor web ni de configuraciones complejas.
 
-Uso
-La aplicación guarda tus datos localmente en tu navegador, lo que significa que tu información no se pierde al recargar la página. Simplemente abre el archivo index.html en tu navegador web.
+Descargar el archivo: Obtén el archivo index.html.
 
-Utiliza los botones de los días para cambiar la rutina semanal.
+Abrir en el navegador: Haz doble clic en el archivo o ábrelo directamente con tu navegador preferido (Chrome, Firefox, Edge, etc.).
 
-Haz clic en "Agregar" para crear un nuevo ejercicio o en "Editar" para modificar o eliminar uno existente.
+La aplicación cargará automáticamente y podrás empezar a usarla de inmediato. Todos tus datos se guardarán localmente en el navegador.
 
-Usa el temporizador para tus descansos.
+📂 Estructura del Código
+El proyecto se compone de un único archivo index.html que integra la estructura, los estilos y la lógica:
 
-Marcar los ejercicios como completados para actualizar tus gráficos de progreso.
+<head>: Contiene los metadatos, la carga de las librerías externas (Tailwind, Chart.js, Phosphor Icons) y los estilos CSS personalizados.
 
-Agrega tus datos de progreso corporal en la sección correspondiente para un seguimiento más detallado.
+<body>: Define la interfaz de usuario con secciones para el encabezado, el selector de días, el contenido principal (rutinas, resumen, comentarios, gráficos) y los modales (añadir ejercicio, actualización).
 
-¡Esperamos que disfrutes usando KALYX para alcanzar tus objetivos de fitness!
+<script>: Contiene todo el código JavaScript de la aplicación, incluyendo las funciones para la gestión de datos, la renderización de la interfaz, el temporizador y el manejo de eventos.
+
+🧩 Dependencias Externas
+La aplicación utiliza las siguientes librerías, cargadas a través de CDN:
+
+Tailwind CSS: <script src="https://cdn.tailwindcss.com"></script>
+
+Chart.js: <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+Chart.js Date Adapter: <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+Phosphor Icons: <script src="https://unpkg.com/phosphor-icons"></script>
+
+🤝 Contribuciones
+KALYX se encuentra en una fase temprana, por lo que cualquier tipo de contribución es bienvenida. Si deseas colaborar, puedes abrir un issue para reportar errores, sugerir nuevas características o enviar tus cambios mediante un pull request.
