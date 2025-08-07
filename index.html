@@ -244,6 +244,16 @@
             </div>
         </section>
     </div>
+    
+    <!-- Pie de página con el aviso de la encuesta -->
+    <footer class="text-center text-gray-400 text-sm py-8 mt-12 bg-gray-900 border-t border-gray-700">
+        <p class="mb-2">© 2025 KALYX. Todos los derechos reservados.</p>
+        <p>
+            ¡Ayúdanos a mejorar! Responde nuestra 
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRlHiksitm3pRbX_mTVmfvHI1TgYj0pNkTBF1JYPUqKh8QOA/viewform?usp=header" target="_blank" class="text-blue-400 hover:underline">encuesta sobre la app</a> 
+            para darnos tus comentarios.
+        </p>
+    </footer>
 
     <!-- Modal para Añadir/Editar Ejercicio -->
     <div id="exercise-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4">
@@ -347,13 +357,12 @@
             console.log("Intentando cargar datos de la aplicación desde localStorage...");
             const savedData = JSON.parse(localStorage.getItem('kalyxAppData'));
             const weekStartDate = getWeekStartDate().toISOString().split('T')[0];
-
             if (savedData) {
                 // Siempre carga los datos acumulativos (comentarios, progreso corporal y progreso de peso).
                 appData.comments = savedData.comments || [];
                 appData.bodyProgress = savedData.bodyProgress || [];
-                appData.progress = savedData.progress || {}; // Cargar el historial de progreso de peso
-
+                appData.progress = savedData.progress || {};
+                // Cargar el historial de progreso de peso
                 // Reinicia las rutinas solo si la semana ha cambiado
                 if (savedData.weekStart !== weekStartDate) {
                     console.log("La semana ha cambiado, reiniciando los datos de rutina.");
@@ -372,7 +381,6 @@
                 appData.weekStart = weekStartDate;
                 appData.bodyProgress = [];
             }
-
             const savedTheme = localStorage.getItem('kalyxTheme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light');
@@ -392,16 +400,13 @@
             const routinesList = document.getElementById('routines-list');
             routinesList.innerHTML = '';
             const routines = appData.routines[currentDay] || [];
-            
             if (routines.length === 0) {
                 routinesList.innerHTML = `<p class="text-center text-gray-400">No hay ejercicios para ${daysOfWeek[currentDay]}.</p>`;
                 return;
             }
-
             routines.forEach((exercise, index) => {
                 const exerciseItem = document.createElement('div');
                 exerciseItem.classList.add('bg-gray-700', 'p-4', 'rounded-2xl', 'flex', 'flex-col', 'md:flex-row', 'items-center', 'justify-between', 'space-y-2', 'md:space-y-0');
-                
                 const exerciseDetails = `
                     <div class="flex-grow">
                         <h4 class="text-xl font-bold">${exercise.name}</h4>
@@ -429,462 +434,474 @@
         function renderComments() {
             const commentsList = document.getElementById('comments-list');
             commentsList.innerHTML = '';
-            const commentsForDay = appData.comments.filter(comment => comment.day === currentDay);
-            
-            if (commentsForDay.length === 0) {
-                commentsList.innerHTML = `<p class="text-center text-gray-400">No hay comentarios para este día.</p>`;
+            const todayComments = appData.comments[currentDay] || [];
+            if (todayComments.length === 0) {
+                commentsList.innerHTML = `<p class="text-center text-gray-400">No hay comentarios para hoy.</p>`;
                 return;
             }
-
-            commentsForDay.forEach((comment, index) => {
+            todayComments.forEach((comment, index) => {
                 const commentItem = document.createElement('div');
-                commentItem.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'flex', 'justify-between', 'items-center');
-                commentItem.innerHTML = `
-                    <p class="flex-grow comment-text">${comment.text}</p>
+                commentItem.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'flex', 'items-center', 'justify-between');
+                const commentText = `
+                    <p class="flex-grow">${comment}</p>
                     <div class="flex space-x-2">
-                        <button class="edit-comment-btn text-blue-400 hover:text-blue-500 font-bold" data-index="${index}">
+                        <button class="edit-comment-btn text-blue-400 hover:text-blue-500 p-2 rounded-full hover:bg-gray-600 transition-colors duration-200" data-index="${index}">
                             <i class="ph-bold ph-pencil"></i>
                         </button>
-                        <button class="delete-comment-btn text-red-400 hover:text-red-500 font-bold" data-index="${index}">
+                        <button class="delete-comment-btn text-red-400 hover:text-red-500 p-2 rounded-full hover:bg-gray-600 transition-colors duration-200" data-index="${index}">
                             <i class="ph-bold ph-trash"></i>
                         </button>
                     </div>
                 `;
+                commentItem.innerHTML = commentText;
                 commentsList.appendChild(commentItem);
             });
         }
         
         function updateSummary() {
-            const trainedDays = appData.routines.filter(day => day.some(ex => ex.completed)).length;
-            const completedExercises = appData.routines.flat().filter(ex => ex.completed).length;
-
+            const trainedDays = appData.routines.filter(day => day.length > 0 && day.some(e => e.completed)).length;
+            const completedExercises = appData.routines.flat().filter(e => e.completed).length;
             document.getElementById('trained-days').textContent = trainedDays;
             document.getElementById('completed-exercises').textContent = completedExercises;
         }
 
-        function setupDaySelector() {
-            const dayButtons = document.querySelectorAll('.day-selector-btn');
-            dayButtons.forEach((button, index) => {
-                button.textContent = daysOfWeek[index].substring(0, 3);
-                button.addEventListener('click', () => {
-                    dayButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
-                    button.classList.add('bg-blue-500', 'text-white');
-                    currentDay = index;
-                    renderRoutines();
-                    renderComments();
-                });
-            });
+        function calculateBodyFatPercentage(weight, waist, neck, height, gender) {
+            let bodyFat = 0;
+            if (gender === 'male') {
+                // Fórmula de la Marina de los EE. UU. para hombres
+                bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+            } else if (gender === 'female') {
+                // Fórmula de la Marina de los EE. UU. para mujeres
+                const hip = parseFloat(document.getElementById('hip-size').value);
+                bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+            }
+            return bodyFat ? bodyFat.toFixed(2) : 0;
         }
-        
-        // Lógica de Gráficos
-        function createOrUpdateChart(chartId, chartType, labels, data, labelText, yLabelText, isBodyChart = false) {
-            const ctx = document.getElementById(chartId).getContext('2d');
-            const existingChart = Chart.getChart(ctx);
-            
-            const isDarkMode = document.body.classList.contains('dark');
-            const textColor = isDarkMode ? '#f1f5f9' : '#1f2937';
-            const gridColor = isDarkMode ? 'rgba(241, 245, 249, 0.1)' : 'rgba(31, 41, 55, 0.1)';
-            const borderColor = '#3b82f6';
-            const backgroundColor = 'rgba(59, 130, 246, 0.2)';
 
-            if (existingChart) {
-                existingChart.data.labels = labels;
-                existingChart.data.datasets[0].data = data;
-                existingChart.data.datasets[0].label = labelText;
-                existingChart.options.scales.y.title.text = yLabelText;
-                existingChart.update();
-            } else {
-                new Chart(ctx, {
-                    type: chartType,
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: labelText,
-                            data: data,
-                            borderColor: borderColor,
-                            backgroundColor: backgroundColor,
-                            tension: 0.4,
-                            fill: true,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: textColor
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day',
-                                    tooltipFormat: 'dd MMM',
-                                    displayFormats: {
-                                        day: 'dd MMM'
-                                    }
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Fecha',
-                                    color: textColor
-                                },
-                                ticks: {
-                                    color: textColor
-                                },
-                                grid: {
-                                    color: gridColor
+        function renderBodyProgressCharts() {
+            const dates = appData.bodyProgress.map(p => new Date(p.date));
+            const weights = appData.bodyProgress.map(p => p.weight);
+            const bodyFats = appData.bodyProgress.map(p => p.bodyFat);
+
+            if (bodyWeightChart) bodyWeightChart.destroy();
+            bodyWeightChart = new Chart(document.getElementById('body-weight-chart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Peso (kg)',
+                        data: weights,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd MMM',
+                                displayFormats: {
+                                    day: 'dd/MM'
                                 }
                             },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: yLabelText,
-                                    color: textColor
-                                },
-                                ticks: {
-                                    color: textColor
-                                },
-                                grid: {
-                                    color: gridColor
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Peso (kg)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return new Date(context[0].parsed.x).toLocaleDateString();
                                 }
                             }
                         }
                     }
-                });
-            }
-        }
-
-        function updateWeightChart() {
-            const selector = document.getElementById('exercise-chart-selector');
-            const exerciseName = selector.value;
-            
-            if (exerciseName) {
-                const progressData = appData.progress[exerciseName] || [];
-                const labels = progressData.map(p => new Date(p.date));
-                const data = progressData.map(p => p.weight);
-                createOrUpdateChart('weight-chart', 'line', labels, data, `Peso de ${exerciseName} (kg)`, 'Peso (kg)');
-            } else {
-                // Limpiar el gráfico si no hay ejercicio seleccionado
-                const ctx = document.getElementById('weight-chart').getContext('2d');
-                const existingChart = Chart.getChart(ctx);
-                if (existingChart) {
-                    existingChart.destroy();
                 }
-            }
-        }
+            });
 
+            if (bodyFatChart) bodyFatChart.destroy();
+            bodyFatChart = new Chart(document.getElementById('body-fat-chart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Grasa Corporal (%)',
+                        data: bodyFats,
+                        borderColor: 'rgb(249, 115, 22)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'dd MMM',
+                                displayFormats: {
+                                    day: 'dd/MM'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Grasa Corporal (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return new Date(context[0].parsed.x).toLocaleDateString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
         function updateExerciseChartSelector() {
             const selector = document.getElementById('exercise-chart-selector');
             selector.innerHTML = '<option value="">Selecciona un ejercicio</option>';
-            const allExerciseNames = new Set();
-            
-            // Recorre todas las rutinas de la semana para encontrar todos los ejercicios
-            appData.routines.flat().forEach(exercise => {
-                allExerciseNames.add(exercise.name);
-            });
-            
-            allExerciseNames.forEach(name => {
+            const allExercises = new Set(appData.routines.flat().map(e => e.name));
+            allExercises.forEach(name => {
                 const option = document.createElement('option');
                 option.value = name;
                 option.textContent = name;
                 selector.appendChild(option);
             });
-            
-            selector.addEventListener('change', updateWeightChart);
-            updateWeightChart(); // Llama para actualizar el gráfico con el primer ejercicio
         }
 
-        function renderBodyProgressCharts() {
-            const labels = appData.bodyProgress.map(p => new Date(p.date));
-            const bodyWeightData = appData.bodyProgress.map(p => p.weight);
-            const bodyFatData = appData.bodyProgress.map(p => p.bodyFat);
-            
-            createOrUpdateChart('body-weight-chart', 'line', labels, bodyWeightData, 'Peso Corporal (kg)', 'Peso (kg)');
-            createOrUpdateChart('body-fat-chart', 'line', labels, bodyFatData, 'Grasa Corporal (%)', '% Grasa');
-        }
+        function renderWeightChart(exerciseName) {
+            if (weightChart) weightChart.destroy();
+            if (!exerciseName) return;
 
-        // Lógica del Temporizador
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+            const exerciseData = appData.routines.flat().filter(e => e.name === exerciseName);
+            const dates = exerciseData.map(e => new Date(e.date));
+            const weights = exerciseData.map(e => e.weights.reduce((sum, w) => sum + w, 0) / e.weights.length);
+
+            weightChart = new Chart(document.getElementById('weight-chart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: `Peso promedio para ${exerciseName}`,
+                        data: weights,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Fecha'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Peso (kg)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return new Date(context[0].parsed.x).toLocaleDateString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showUpdateModal() {
+            const updateModal = document.getElementById('update-modal');
+            const lastVersion = localStorage.getItem('kalyxLastVersion');
+            if (lastVersion !== 'V.A.4.5.') {
+                updateModal.classList.remove('hidden');
+                localStorage.setItem('kalyxLastVersion', 'V.A.4.5.');
+            }
         }
         
         function updateTimerDisplay() {
-            document.getElementById('timer-display').textContent = formatTime(timeLeft);
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer-display').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
+        
         function startTimer() {
-            if (!isTimerRunning && timeLeft > 0) {
-                isTimerRunning = true;
-                intervalId = setInterval(() => {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        updateTimerDisplay();
-                    } else {
-                        clearInterval(intervalId);
-                        isTimerRunning = false;
-                        showTimerAlert();
-                    }
-                }, 1000);
-            }
+            if (isTimerRunning || timeLeft <= 0) return;
+            isTimerRunning = true;
+            document.getElementById('timer-display').classList.remove('timer-glow');
+            document.getElementById('timer-alert').classList.add('hidden');
+            intervalId = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    pauseTimer();
+                    document.getElementById('timer-alert').classList.remove('hidden');
+                }
+            }, 1000);
         }
-
+        
         function pauseTimer() {
-            if (isTimerRunning) {
-                clearInterval(intervalId);
-                isTimerRunning = false;
-            }
+            isTimerRunning = false;
+            clearInterval(intervalId);
+            document.getElementById('timer-display').classList.add('timer-glow');
         }
-
+        
         function resetTimer() {
             pauseTimer();
             timeLeft = 0;
             updateTimerDisplay();
-        }
-
-        function showTimerAlert() {
-            document.getElementById('timer-alert').classList.remove('hidden');
-        }
-
-        function hideTimerAlert() {
             document.getElementById('timer-alert').classList.add('hidden');
         }
 
-        function showUpdateModal() {
-            // Lógica para mostrar el modal de actualización la primera vez que se carga la página
-            const lastVersion = localStorage.getItem('kalyxVersion');
-            if (lastVersion !== 'V.A.4.5.') {
-                document.getElementById('update-modal').classList.remove('hidden');
-                localStorage.setItem('kalyxVersion', 'V.A.4.5.');
-            }
-        }
-
-        // Función para calcular el % de grasa corporal
-        function calculateBodyFat(weight, height, waist, neck, hip, gender) {
-            if (gender === 'male') {
-                return 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
-            } else if (gender === 'female') {
-                return 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
-            }
-            return null;
-        }
+        // Manejadores de eventos
         
-        // Event Listeners
         document.getElementById('theme-toggle').addEventListener('click', () => {
-            const body = document.body;
-            const themeIcon = document.getElementById('theme-icon');
-            body.classList.toggle('light');
-            const isLight = body.classList.contains('light');
+            document.body.classList.toggle('light');
+            const isLight = document.body.classList.contains('light');
             if (isLight) {
-                themeIcon.classList.remove('ph-sun');
-                themeIcon.classList.add('ph-moon');
+                document.getElementById('theme-icon').classList.remove('ph-sun');
+                document.getElementById('theme-icon').classList.add('ph-moon');
+                localStorage.setItem('kalyxTheme', 'light');
             } else {
-                themeIcon.classList.remove('ph-moon');
-                themeIcon.classList.add('ph-sun');
-            }
-            localStorage.setItem('kalyxTheme', isLight ? 'light' : 'dark');
-            // Actualizar colores de los gráficos
-            if (weightChart) weightChart.destroy();
-            if (bodyWeightChart) bodyWeightChart.destroy();
-            if (bodyFatChart) bodyFatChart.destroy();
-            updateWeightChart();
-            renderBodyProgressCharts();
-        });
-
-        document.getElementById('add-exercise-btn').addEventListener('click', () => {
-            isEditMode = false;
-            document.getElementById('modal-title').textContent = 'Añadir Nuevo Ejercicio';
-            document.getElementById('exercise-form').reset();
-            document.getElementById('exercise-modal').classList.remove('hidden');
-        });
-
-        document.getElementById('routines-list').addEventListener('click', (e) => {
-            if (e.target.closest('.edit-exercise-btn')) {
-                const btn = e.target.closest('.edit-exercise-btn');
-                isEditMode = true;
-                exerciseToEditIndex = btn.dataset.index;
-                const exercise = appData.routines[currentDay][exerciseToEditIndex];
-                
-                document.getElementById('modal-title').textContent = 'Editar Ejercicio';
-                document.getElementById('exercise-name').value = exercise.name;
-                document.getElementById('exercise-sets').value = exercise.sets;
-                document.getElementById('exercise-reps').value = exercise.reps.join(', ');
-                document.getElementById('exercise-weights').value = exercise.weights.join(', ');
-                
-                document.getElementById('exercise-modal').classList.remove('hidden');
-
-            } else if (e.target.closest('.delete-exercise-btn')) {
-                const btn = e.target.closest('.delete-exercise-btn');
-                const index = btn.dataset.index;
-                appData.routines[currentDay].splice(index, 1);
-                saveAppData();
-                renderRoutines();
-                updateExerciseChartSelector();
-                updateSummary();
+                document.getElementById('theme-icon').classList.remove('ph-moon');
+                document.getElementById('theme-icon').classList.add('ph-sun');
+                localStorage.setItem('kalyxTheme', 'dark');
             }
         });
 
-        document.getElementById('routines-list').addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox') {
-                const index = e.target.dataset.index;
-                const exercise = appData.routines[currentDay][index];
-                const isCompleted = e.target.checked;
-                
-                exercise.completed = isCompleted;
-                
-                const exerciseName = exercise.name;
-                const maxWeight = Math.max(...exercise.weights);
-                const today = new Date().toISOString().split('T')[0];
-
-                if (isCompleted) {
-                    if (!appData.progress[exerciseName]) {
-                        appData.progress[exerciseName] = [];
-                    }
-                    const existingEntryIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
-                    if (existingEntryIndex === -1) {
-                        appData.progress[exerciseName].push({ date: today, weight: maxWeight });
-                    }
-                } else {
-                    if (appData.progress[exerciseName]) {
-                        const todayIndex = appData.progress[exerciseName].findIndex(p => p.date === today);
-                        if (todayIndex !== -1) {
-                            appData.progress[exerciseName].splice(todayIndex, 1);
-                        }
-                    }
-                }
-                
-                saveAppData();
-                updateSummary();
-                updateExerciseChartSelector();
+        function setupDaySelector() {
+            const dayButtons = document.querySelectorAll('.day-selector-btn');
+            dayButtons.forEach(button => {
+                button.classList.remove('bg-blue-500', 'text-white');
+            });
+            const currentDayButton = document.querySelector(`.day-selector-btn[data-day="${currentDay}"]`);
+            if (currentDayButton) {
+                currentDayButton.classList.add('bg-blue-500', 'text-white');
             }
-        });
+        }
 
-        document.getElementById('comments-list').addEventListener('click', (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
-
-            const index = target.dataset.index;
-            const commentForDay = appData.comments.filter(c => c.day === currentDay)[index];
-            
-            if (target.classList.contains('edit-comment-btn')) {
-                isCommentEditMode = true;
-                const commentInput = document.getElementById('comment-input');
-                commentInput.value = commentForDay.text;
-                commentInput.focus();
-                
-                document.getElementById('add-comment-btn').textContent = 'Guardar';
-                commentToEditIndex = appData.comments.indexOf(commentForDay);
-            } else if (target.classList.contains('delete-comment-btn')) {
-                const commentIndexToRemove = appData.comments.indexOf(commentForDay);
-                if (commentIndexToRemove > -1) {
-                    appData.comments.splice(commentIndexToRemove, 1);
-                    saveAppData();
+        document.querySelectorAll('.day-selector-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const newDay = parseInt(e.target.dataset.day);
+                if (newDay !== currentDay) {
+                    currentDay = newDay;
+                    setupDaySelector();
+                    renderRoutines();
                     renderComments();
                 }
-            }
-        });
-
-        document.getElementById('add-comment-btn').addEventListener('click', () => {
-            const input = document.getElementById('comment-input');
-            const commentText = input.value.trim();
-            if (commentText) {
-                if (isCommentEditMode) {
-                    if (commentToEditIndex > -1) {
-                        appData.comments[commentToEditIndex].text = commentText;
-                    }
-                    isCommentEditMode = false;
-                    commentToEditIndex = -1;
-                    document.getElementById('add-comment-btn').textContent = 'Añadir';
-                } else {
-                    appData.comments.push({
-                        day: currentDay,
-                        text: commentText
-                    });
-                }
-                saveAppData();
-                input.value = '';
-                renderComments();
-            }
+            });
         });
         
-        document.getElementById('save-body-progress-btn').addEventListener('click', () => {
-            const progressDate = document.getElementById('progress-date').value;
-            const bodyWeight = parseFloat(document.getElementById('body-weight').value);
-            const bodyHeight = parseFloat(document.getElementById('body-height').value);
-            const bodyAge = parseInt(document.getElementById('body-age').value);
-            const waistSize = parseFloat(document.getElementById('waist-size').value);
-            const neckSize = parseFloat(document.getElementById('neck-size').value);
-            const hipSize = parseFloat(document.getElementById('hip-size').value);
-            const bodyGender = document.getElementById('body-gender').value;
-
-            if (progressDate && bodyWeight && bodyHeight && bodyAge && waistSize && neckSize && bodyGender) {
-                const bodyFat = calculateBodyFat(bodyWeight, bodyHeight, waistSize, neckSize, hipSize, bodyGender);
-                
-                const newProgressEntry = {
-                    date: progressDate,
-                    weight: bodyWeight,
-                    height: bodyHeight,
-                    age: bodyAge,
-                    waist: waistSize,
-                    neck: neckSize,
-                    hip: hipSize,
-                    gender: bodyGender,
-                    bodyFat: bodyFat
-                };
-
-                const existingEntryIndex = appData.bodyProgress.findIndex(p => p.date === progressDate);
-                if (existingEntryIndex !== -1) {
-                    appData.bodyProgress[existingEntryIndex] = newProgressEntry;
-                } else {
-                    appData.bodyProgress.push(newProgressEntry);
-                }
-                
-                saveAppData();
-                renderBodyProgressCharts();
-                
-                document.getElementById('progress-date').value = '';
-                document.getElementById('body-weight').value = '';
-                document.getElementById('body-height').value = '';
-                document.getElementById('body-age').value = '';
-                document.getElementById('waist-size').value = '';
-                document.getElementById('neck-size').value = '';
-                document.getElementById('hip-size').value = '';
-                document.getElementById('body-gender').value = '';
-            }
-        });
-
-        document.getElementById('exercise-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('exercise-name').value;
-            const sets = parseInt(document.getElementById('exercise-sets').value);
-            const reps = document.getElementById('exercise-reps').value.split(',').map(r => parseInt(r.trim()));
-            const weights = document.getElementById('exercise-weights').value.split(',').map(w => parseFloat(w.trim()));
-
-            if (isEditMode) {
-                appData.routines[currentDay][exerciseToEditIndex] = { name, sets, reps, weights, completed: false };
-            } else {
-                appData.routines[currentDay].push({ name, sets, reps, weights, completed: false });
-            }
-
-            saveAppData();
-            renderRoutines();
-            document.getElementById('exercise-modal').classList.add('hidden');
-            updateExerciseChartSelector();
-            updateSummary();
+        document.getElementById('add-exercise-btn').addEventListener('click', () => {
+            isEditMode = false;
+            exerciseToEditIndex = -1;
+            document.getElementById('modal-title').textContent = "Añadir Nuevo Ejercicio";
+            document.getElementById('exercise-form').reset();
+            document.getElementById('exercise-modal').classList.remove('hidden');
         });
 
         document.getElementById('cancel-exercise-btn').addEventListener('click', () => {
             document.getElementById('exercise-modal').classList.add('hidden');
         });
         
-        // Event Listeners para el temporizador
+        document.getElementById('exercise-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('exercise-name').value;
+            const sets = parseInt(document.getElementById('exercise-sets').value);
+            const reps = document.getElementById('exercise-reps').value.split(',').map(r => parseInt(r.trim()));
+            const weights = document.getElementById('exercise-weights').value.split(',').map(w => parseFloat(w.trim()));
+
+            if (!appData.routines[currentDay]) {
+                appData.routines[currentDay] = [];
+            }
+            
+            const exerciseData = {
+                date: new Date().toISOString().split('T')[0],
+                name,
+                sets,
+                reps,
+                weights,
+                completed: false
+            };
+
+            if (isEditMode) {
+                // Mantener el estado de 'completed' si está en modo edición
+                exerciseData.completed = appData.routines[currentDay][exerciseToEditIndex].completed;
+                appData.routines[currentDay][exerciseToEditIndex] = exerciseData;
+            } else {
+                appData.routines[currentDay].push(exerciseData);
+            }
+            
+            saveAppData();
+            renderRoutines();
+            updateSummary();
+            updateExerciseChartSelector();
+            document.getElementById('exercise-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('routines-list').addEventListener('click', (e) => {
+            if (e.target.closest('.delete-exercise-btn')) {
+                const index = e.target.closest('.delete-exercise-btn').dataset.index;
+                appData.routines[currentDay].splice(index, 1);
+                saveAppData();
+                renderRoutines();
+                updateSummary();
+            }
+            if (e.target.closest('.edit-exercise-btn')) {
+                const index = e.target.closest('.edit-exercise-btn').dataset.index;
+                isEditMode = true;
+                exerciseToEditIndex = index;
+                document.getElementById('modal-title').textContent = "Editar Ejercicio";
+                const exercise = appData.routines[currentDay][index];
+                document.getElementById('exercise-name').value = exercise.name;
+                document.getElementById('exercise-sets').value = exercise.sets;
+                document.getElementById('exercise-reps').value = exercise.reps.join(', ');
+                document.getElementById('exercise-weights').value = exercise.weights.join(', ');
+                document.getElementById('exercise-modal').classList.remove('hidden');
+            }
+            if (e.target.closest('input[type="checkbox"]')) {
+                const checkbox = e.target.closest('input[type="checkbox"]');
+                const index = checkbox.dataset.index;
+                appData.routines[currentDay][index].completed = checkbox.checked;
+                saveAppData();
+                updateSummary();
+            }
+        });
+        
+        document.getElementById('add-comment-btn').addEventListener('click', () => {
+            const commentInput = document.getElementById('comment-input');
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                if (!appData.comments[currentDay]) {
+                    appData.comments[currentDay] = [];
+                }
+                if (isCommentEditMode) {
+                    appData.comments[currentDay][commentToEditIndex] = commentText;
+                    isCommentEditMode = false;
+                    commentToEditIndex = -1;
+                } else {
+                    appData.comments[currentDay].push(commentText);
+                }
+                commentInput.value = '';
+                saveAppData();
+                renderComments();
+            }
+        });
+
+        document.getElementById('comment-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('add-comment-btn').click();
+            }
+        });
+        
+        document.getElementById('comments-list').addEventListener('click', (e) => {
+            if (e.target.closest('.delete-comment-btn')) {
+                const index = e.target.closest('.delete-comment-btn').dataset.index;
+                appData.comments[currentDay].splice(index, 1);
+                saveAppData();
+                renderComments();
+            }
+            if (e.target.closest('.edit-comment-btn')) {
+                const index = e.target.closest('.edit-comment-btn').dataset.index;
+                isCommentEditMode = true;
+                commentToEditIndex = index;
+                const commentInput = document.getElementById('comment-input');
+                commentInput.value = appData.comments[currentDay][index];
+                commentInput.focus();
+            }
+        });
+        
+        document.getElementById('save-body-progress-btn').addEventListener('click', () => {
+            const date = document.getElementById('progress-date').value;
+            const weight = parseFloat(document.getElementById('body-weight').value);
+            const height = parseFloat(document.getElementById('body-height').value);
+            const age = parseFloat(document.getElementById('body-age').value);
+            const waist = parseFloat(document.getElementById('waist-size').value);
+            const neck = parseFloat(document.getElementById('neck-size').value);
+            const hip = parseFloat(document.getElementById('hip-size').value);
+            const gender = document.getElementById('body-gender').value;
+
+            if (date && weight && height && age && waist && neck && gender) {
+                const bodyFat = calculateBodyFatPercentage(weight, waist, neck, height, gender);
+                
+                const progressEntry = {
+                    date,
+                    weight,
+                    height,
+                    age,
+                    waist,
+                    neck,
+                    hip,
+                    gender,
+                    bodyFat
+                };
+
+                // Verificar si ya existe un registro para la fecha
+                const existingIndex = appData.bodyProgress.findIndex(p => p.date === date);
+                if (existingIndex > -1) {
+                    appData.bodyProgress[existingIndex] = progressEntry;
+                } else {
+                    appData.bodyProgress.push(progressEntry);
+                    appData.bodyProgress.sort((a, b) => new Date(a.date) - new Date(b.date));
+                }
+
+                saveAppData();
+                renderBodyProgressCharts();
+                // Limpiar el formulario
+                document.getElementById('body-weight-chart').closest('section').querySelector('form').reset();
+            } else {
+                console.error("Por favor, completa todos los campos para registrar el progreso corporal.");
+            }
+        });
+
+        document.getElementById('exercise-chart-selector').addEventListener('change', (e) => {
+            const exerciseName = e.target.value;
+            renderWeightChart(exerciseName);
+        });
+
         document.getElementById('start-timer-btn').addEventListener('click', startTimer);
         document.getElementById('pause-timer-btn').addEventListener('click', pauseTimer);
         document.getElementById('reset-timer-btn').addEventListener('click', resetTimer);
@@ -903,6 +920,10 @@
         document.getElementById('close-update-modal-btn').addEventListener('click', () => {
             document.getElementById('update-modal').classList.add('hidden');
         });
+        
+        function hideTimerAlert() {
+            document.getElementById('timer-alert').classList.add('hidden');
+        }
 
         // Evento al cargar la página
         window.addEventListener('load', () => {
